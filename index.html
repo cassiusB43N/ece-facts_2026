@@ -1,424 +1,652 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSPC ECE & Tech Hub - Online Learning Campaign</title>
-  
-  <!-- Tailwind CSS -->
+  <title>CSPC Multi-Disciplinary Tech & ECE Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Firebase Compat SDKs -->
+  <!-- Firebase SDKs for Cloud Leaderboard Sync -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-
-  <style>
-    body {
-      background-color: #0f172a;
-      color: #f8fafc;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cspcBlue: { DEFAULT: '#1e3a8a', dark: '#0f172a', light: '#3b82f6' },
+            cspcYellow: { DEFAULT: '#fbbf24', hover: '#f59e0b', light: '#fef08a' }
+          }
+        }
+      }
     }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .font-heading { font-family: 'Fredoka', cursive, sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 9999px; }
+    .glow-effect { box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
+    .glow-blue { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between">
+<body class="h-full flex flex-col justify-between overflow-x-hidden bg-slate-950 text-slate-100">
 
-  <!-- HEADER -->
-  <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-md">
-    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-slate-950 font-extrabold text-xl">
-          <i class="fa-solid fa-microchip"></i>
-        </div>
-        <div>
-          <h1 class="text-xl font-extrabold tracking-tight text-white">CSPC TECH HUB</h1>
-          <p class="text-xs text-slate-400">Camarines Sur Polytechnic Colleges & Open Tech Portal</p>
-        </div>
+<!-- Header Navbar -->
+<header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('facts')">
+      <div class="bg-cspcYellow p-2 rounded-xl text-cspcBlue flex items-center justify-center font-bold">
+        <i class="fa-solid fa-microchip text-2xl"></i>
       </div>
-
-      <!-- Controls -->
-      <div class="flex items-center gap-3">
-        <button id="bgmBtn" onclick="toggleAudio()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-2 rounded-lg border border-slate-700 flex items-center gap-2">
-          <i id="audioIcon" class="fa-solid fa-volume-xmark"></i>
-          <span id="audioText">BGM: Off</span>
-        </button>
-
-        <div id="userBadge" class="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs">
-          <span id="navAvatar" class="w-6 h-6 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold">?</span>
-          <span id="navName" class="font-bold text-slate-200">Not Registered</span>
-          <span id="navScore" class="bg-amber-500/20 text-amber-400 font-extrabold px-2 py-0.5 rounded text-[10px]">+0 PTS</span>
-        </div>
-
-        <button onclick="openProfileModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-2 rounded-lg transition">
-          <i class="fa-solid fa-id-card mr-1"></i> Register / Profile
-        </button>
+      <div>
+        <h1 class="font-heading text-xl md:text-2xl font-bold tracking-wide text-cspcYellow leading-none">CSPC TECH HUB</h1>
+        <p class="text-xs text-slate-400">Camarines Sur Polytechnic Colleges & Open Tech Portal</p>
       </div>
     </div>
-  </header>
 
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
-    
-    <!-- NAVIGATION TABS -->
-    <div class="flex border-b border-slate-800 mb-6 space-x-2 md:space-x-4 overflow-x-auto">
-      <button onclick="switchTab('leaderboard')" id="tab-leaderboard" class="py-2 px-4 border-b-2 border-amber-500 text-amber-400 font-bold flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-trophy"></i> Live Leaderboard
+    <!-- Active User Status / Stats -->
+    <div class="flex items-center gap-4">
+      <button onclick="toggleAudio()" id="audioBtn" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-cspcYellow px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-700 transition">
+        <i id="audioIcon" class="fa-solid fa-volume-xmark"></i>
+        <span id="audioText" class="hidden md:inline">BGM: Off</span>
       </button>
-      <button onclick="switchTab('facts')" id="tab-facts" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-lightbulb"></i> 50+ Tech Facts
+
+      <div id="navUserBadge" class="hidden sm:flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+        <img id="navAvatarImg" src="" class="w-6 h-6 rounded-full object-cover border border-cspcYellow" alt="Avatar">
+        <span id="navUserName" class="text-xs font-bold text-slate-200 max-w-[100px] truncate">Not Registered</span>
+        <span id="navUserPoints" class="bg-cspcYellow text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-extrabold">+0 PTS</span>
+      </div>
+
+      <button onclick="openOnboardingModal()" class="text-xs bg-cspcBlue hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold transition border border-blue-500/30">
+        <i class="fa-solid fa-user-pen mr-1"></i> Profile / Register
       </button>
-      <button onclick="switchTab('games')" id="tab-games" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-gamepad"></i> 10 Mini-Games
-      </button>
-      <button onclick="switchTab('certificate')" id="tab-certificate" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-certificate"></i> Certificate
-      </button>
-    </div>
-
-    <!-- LEADERBOARD TAB -->
-    <section id="sec-leaderboard" class="block">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl mb-6">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2 class="text-2xl font-black text-amber-400 flex items-center gap-2">
-              <i class="fa-solid fa-trophy"></i> Open Universal Leaderboard
-            </h2>
-            <p class="text-xs text-slate-400">Real-time ranking of registered CSPC students & tech portal participants.</p>
-          </div>
-          <button onclick="syncLeaderboard()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
-            <i class="fa-solid fa-rotate"></i> Refresh Ranks
-          </button>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
-              <tr>
-                <th class="p-3">Rank</th>
-                <th class="p-3">Participant</th>
-                <th class="p-3">Course / Department</th>
-                <th class="p-3 text-right">Total Score</th>
-              </tr>
-            </thead>
-            <tbody id="leaderboardBody" class="divide-y divide-slate-800/50">
-              <tr>
-                <td colspan="4" class="p-4 text-center text-slate-500">Connecting to live database...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- 50+ TECH FACTS TAB -->
-    <section id="sec-facts" class="hidden">
-      <div class="mb-4 flex justify-between items-center">
-        <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-book-open text-amber-400 mr-2"></i> ECE & Tech Learning Modules</h2>
-        <span class="text-xs text-slate-400">Mark modules as learned to earn points</span>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="factsGrid">
-        <!-- Rendered via JS -->
-      </div>
-    </section>
-
-    <!-- 10 MINI-GAMES TAB -->
-    <section id="sec-games" class="hidden">
-      <div class="mb-4">
-        <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-gamepad text-amber-400 mr-2"></i> ECE Knowledge Mini-Games</h2>
-        <p class="text-xs text-slate-400">Test your electronics knowledge to climb the leaderboard.</p>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="gamesGrid">
-        <!-- Rendered via JS -->
-      </div>
-    </section>
-
-    <!-- CERTIFICATE TAB -->
-    <section id="sec-certificate" class="hidden">
-      <div class="bg-slate-900 border border-amber-500/30 rounded-xl p-8 max-w-2xl mx-auto text-center shadow-2xl relative overflow-hidden">
-        <div class="border-4 border-dashed border-amber-500/20 p-6 rounded-lg">
-          <i class="fa-solid fa-award text-5xl text-amber-400 mb-3"></i>
-          <h2 class="text-2xl font-black text-white tracking-wide uppercase mb-1">Certificate of Completion</h2>
-          <p class="text-xs text-slate-400 mb-6">Camarines Sur Polytechnic Colleges • Open Tech Portal</p>
-          
-          <p class="text-sm text-slate-300">This certifies that</p>
-          <h3 id="certName" class="text-xl font-extrabold text-amber-400 my-2 underline decoration-amber-500/40">Student Name</h3>
-          <p class="text-xs text-slate-300 max-w-md mx-auto">has completed interactive learning modules in Electronics Engineering, Digital Systems, and Communication Technology.</p>
-          
-          <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400">
-            <div>Score: <span id="certScore" class="text-amber-400 font-bold">50 PTS</span></div>
-            <div>Date: <span id="certDate">2026</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- REGISTRATION MODAL -->
-  <div id="profileModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-amber-500/40 rounded-xl max-w-md w-full p-6 relative shadow-2xl">
-      <div class="text-center mb-5">
-        <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-2 text-xl font-bold">
-          <i class="fa-solid fa-user-plus"></i>
-        </div>
-        <h3 class="text-xl font-black text-white">Student Registration</h3>
-        <p class="text-xs text-slate-400 mt-1">Please enter your details to join the live ranking.</p>
-      </div>
-
-      <form onsubmit="saveProfile(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name *</label>
-          <input type="text" id="inputName" required placeholder="e.g. Juan Dela Cruz" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Email Identifier *</label>
-          <input type="email" id="inputEmail" required placeholder="e.g. student@my.cspc.edu.ph" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Course / Dept / Program *</label>
-          <input type="text" id="inputCourse" required placeholder="e.g. BS ECE" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
-        </div>
-        <div class="pt-2">
-          <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider rounded-lg shadow-lg transition">
-            Save Profile & Sync
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 
-  <!-- SCRIPT ENGINE -->
-  <script>
-    // 1. FIREBASE INITIALIZATION
-    const firebaseConfig = {
-      databaseURL: "https://cspc-ece-facts-default-rtdb.firebaseio.com"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+  <!-- Primary Navigation Tabs -->
+  <nav class="bg-slate-900 border-t border-slate-800/80 px-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-center sm:justify-start gap-1 md:gap-4 overflow-x-auto py-2 text-xs md:text-sm font-semibold">
+      <button onclick="switchTab('facts')" id="tab-facts" class="tab-btn px-4 py-2 rounded-lg transition text-cspcYellow bg-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-lightbulb"></i> 50+ Tech Facts
+      </button>
+      <button onclick="switchTab('games')" id="tab-games" class="tab-btn px-4 py-2 rounded-lg transition text-slate-400 hover:text-slate-200 flex items-center gap-2">
+        <i class="fa-solid fa-gamepad"></i> 10 Mini-Games
+      </button>
+      <button onclick="switchTab('leaderboard')" id="tab-leaderboard" class="tab-btn px-4 py-2 rounded-lg transition text-slate-400 hover:text-slate-200 flex items-center gap-2">
+        <i class="fa-solid fa-trophy"></i> Live Leaderboard
+      </button>
+      <button onclick="switchTab('certificate')" id="tab-certificate" class="tab-btn px-4 py-2 rounded-lg transition text-slate-400 hover:text-slate-200 flex items-center gap-2">
+        <i class="fa-solid fa-award"></i> Certificate
+      </button>
+    </div>
+  </nav>
+</header>
 
-    // 2. USER STATE
-    let currentUser = JSON.parse(localStorage.getItem('cspc_registered_user')) || null;
+<!-- UNIVERSAL ONBOARDING MODAL (FORCED REGISTRATION) -->
+<div id="onboardingModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+    <div class="text-center mb-6">
+      <div class="inline-block bg-cspcBlue p-3 rounded-2xl text-cspcYellow mb-2">
+        <i class="fa-solid fa-graduation-cap text-3xl"></i>
+      </div>
+      <h2 class="font-heading text-2xl font-bold text-slate-100">Welcome to CSPC Tech Hub</h2>
+      <p class="text-xs text-slate-400">Please register your student details to participate in learning & ranking!</p>
+    </div>
 
-    // 3. AUDIO
-    let bgmAudio = new Audio('bgm.mp3');
-    bgmAudio.loop = true;
-    let isPlaying = false;
+    <form id="onboardingForm" onsubmit="saveProfile(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Full Name *</label>
+        <input type="text" id="inputName" required placeholder="e.g. Juan Dela Cruz" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cspcYellow">
+      </div>
 
-    function toggleAudio() {
-      if (!isPlaying) {
-        bgmAudio.play().then(() => {
-          isPlaying = true;
-          document.getElementById('audioText').textContent = "BGM: Playing";
-          document.getElementById('audioIcon').className = "fa-solid fa-volume-high text-amber-400";
-        }).catch(err => console.log("Audio play blocked/missing:", err));
-      } else {
-        bgmAudio.pause();
-        isPlaying = false;
-        document.getElementById('audioText').textContent = "BGM: Off";
-        document.getElementById('audioIcon').className = "fa-solid fa-volume-xmark";
-      }
-    }
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Email Address *</label>
+        <input type="email" id="inputEmail" required placeholder="e.g. student@cspc.edu.ph" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cspcYellow">
+      </div>
 
-    // 4. DATA CONTENT (FACTS & GAMES)
-    const factsData = [
-      { id: 1, title: "Ohm's Law", desc: "Voltage = Current x Resistance (V = I x R). The core formula for electrical circuit analysis." },
-      { id: 2, title: "Shannon-Hartley Theorem", desc: "Determines the theoretical maximum data rate for a noisy communications channel." },
-      { id: 3, title: "Nyquist Sampling Rate", desc: "A signal must be sampled at least twice its highest frequency component to avoid aliasing." },
-      { id: 4, title: "Semiconductor Bandgap", desc: "The energy difference between the valence band and conduction band in materials." },
-      { id: 5, title: "Fourier Transform", desc: "Decomposes a complex signal into its constituent sine and cosine frequencies." },
-      { id: 6, title: "Maxwell's Equations", desc: "Four fundamental equations describing electric and magnetic fields and their interactions." }
-    ];
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Course / Dept / Program *</label>
+        <input type="text" id="inputCourse" list="courseSuggestions" required placeholder="Type e.g. BS ECE, BS IT, SHS STEM" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cspcYellow">
+        <datalist id="courseSuggestions">
+          <option value="BS ECE - Electronics Engineering"></option>
+          <option value="BS IT - Information Technology"></option>
+          <option value="BS CS - Computer Science"></option>
+          <option value="BS EE - Electrical Engineering"></option>
+          <option value="SHS - STEM Strand"></option>
+        </datalist>
+      </div>
 
-    const gamesData = [
-      { id: 1, title: "Resistor Color Code Quiz", desc: "Test your speed identifying resistor band colors and values.", pts: 20 },
-      { id: 2, title: "Logic Gate Simulator", desc: "Solve logic combination puzzles using AND, OR, and XOR gates.", pts: 20 },
-      { id: 3, title: "Formula Speed Run", desc: "Match basic ECE formulas to their correct units and variables.", pts: 20 },
-      { id: 4, title: "Signal Modulation Challenge", desc: "Identify AM vs FM signal properties under noisy channel conditions.", pts: 20 }
-    ];
-
-    function renderFacts() {
-      const container = document.getElementById('factsGrid');
-      container.innerHTML = factsData.map(f => `
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl flex flex-col justify-between">
-          <div>
-            <h3 class="font-bold text-amber-400 mb-2"><i class="fa-solid fa-bolt mr-2"></i>${f.title}</h3>
-            <p class="text-xs text-slate-300 mb-4">${f.desc}</p>
-          </div>
-          <button onclick="addPoints(10)" class="self-start bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg">
-            +10 PTS Mark Learned
-          </button>
+      <!-- Avatar Picker -->
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase mb-2">Select Avatar</label>
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <button type="button" onclick="setAvatarMode('preset')" id="btnAvatarPreset" class="py-2 text-xs font-bold rounded-xl border border-cspcYellow bg-slate-800 text-cspcYellow">Mascot</button>
+          <button type="button" onclick="setAvatarMode('upload')" id="btnAvatarUpload" class="py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-400">Photo Upload</button>
+          <button type="button" onclick="setAvatarMode('camera')" id="btnAvatarCam" class="py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-400">Live Snap</button>
         </div>
-      `).join('');
-    }
 
-    function renderGames() {
-      const container = document.getElementById('gamesGrid');
-      container.innerHTML = gamesData.map(g => `
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl flex flex-col justify-between">
-          <div>
-            <h3 class="font-bold text-amber-400 mb-2"><i class="fa-solid fa-gamepad mr-2"></i>${g.title}</h3>
-            <p class="text-xs text-slate-300 mb-4">${g.desc}</p>
-          </div>
-          <button onclick="addPoints(${g.pts})" class="self-start bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg">
-            Play Game (+${g.pts} PTS)
-          </button>
+        <div id="avatarPresetsSection" class="flex justify-around bg-slate-800 p-3 rounded-xl border border-slate-700">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%233b82f6'/><path d='M30 40 Q50 20 70 40 Q50 60 30 40' fill='%23fbbf24'/><circle cx='50' cy='40' r='10' fill='%23ffffff'/><circle cx='50' cy='40' r='5' fill='%230f172a'/></svg>" onclick="selectPresetAvatar(this.src)" class="w-12 h-12 rounded-full cursor-pointer hover:scale-110 transition border-2 border-cspcYellow p-1">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%2310b981'/><rect x='30' y='30' width='40' height='40' rx='10' fill='%23ffffff'/><circle cx='42' cy='45' r='5' fill='%230f172a'/><circle cx='58' cy='45' r='5' fill='%230f172a'/></svg>" onclick="selectPresetAvatar(this.src)" class="w-12 h-12 rounded-full cursor-pointer hover:scale-110 transition border-2 border-transparent hover:border-cspcYellow p-1">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%238b5cf6'/><polygon points='50,20 80,80 20,80' fill='%23fbbf24'/><circle cx='50' cy='55' r='8' fill='%23ffffff'/></svg>" onclick="selectPresetAvatar(this.src)" class="w-12 h-12 rounded-full cursor-pointer hover:scale-110 transition border-2 border-transparent hover:border-cspcYellow p-1">
         </div>
-      `).join('');
-    }
 
-    // 5. REALTIME FIREBASE SYNC (NO GUEST ACCOUNTS)
-    function syncLeaderboard() {
-      const studentsRef = database.ref('students');
-      studentsRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        const tbody = document.getElementById('leaderboardBody');
-        tbody.innerHTML = "";
+        <div id="avatarUploadSection" class="hidden bg-slate-800 p-3 rounded-xl border border-slate-700">
+          <input type="file" id="fileAvatar" accept="image/*" onchange="handleFileUpload(event)" class="text-xs text-slate-300 w-full">
+        </div>
 
-        if (!data) {
-          tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">No registered students yet. Be the first to join!</td></tr>`;
-          return;
-        }
+        <div id="avatarCameraSection" class="hidden bg-slate-800 p-3 rounded-xl border border-slate-700 text-center">
+          <video id="webcamVideo" class="w-32 h-32 mx-auto rounded-lg bg-black object-cover mb-2" autoplay playsinline></video>
+          <button type="button" onclick="captureWebcam()" class="bg-cspcYellow text-slate-950 px-3 py-1 rounded text-xs font-bold">Snap Photo</button>
+        </div>
+      </div>
 
-        let studentsList = Object.values(data).filter(st => {
-          if (!st.name) return false;
-          const lower = st.name.toLowerCase();
-          return !lower.includes('guest') && !lower.includes('visiting');
-        });
+      <div class="pt-2">
+        <button type="submit" class="w-full bg-cspcYellow hover:bg-cspcYellow-hover text-slate-950 font-extrabold py-3 rounded-xl transition shadow-lg text-sm uppercase">Save Profile & Start Learning</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-        if (studentsList.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">No registered students found on leaderboard.</td></tr>`;
-          return;
-        }
+<!-- MAIN APP CONTENT AREA -->
+<main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
 
-        studentsList.sort((a, b) => (b.points || 0) - (a.points || 0));
+  <!-- TAB 1: 50+ ECE & TECH FACTS LIBRARY -->
+  <section id="section-facts" class="space-y-6">
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between shadow-xl">
+      <div>
+        <h2 class="font-heading text-2xl font-bold text-cspcYellow flex items-center gap-2">
+          <i class="fa-solid fa-book-open"></i> Verified 50+ Tech & ECE Knowledge Base
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Explore 52 engineering facts across electronics, telecommunications, computing, signal processing, and robotics.</p>
+      </div>
 
-        studentsList.forEach((st, idx) => {
-          const row = document.createElement('tr');
-          row.className = "hover:bg-slate-800/40 transition border-b border-slate-800/30";
-          row.innerHTML = `
-            <td class="p-3 font-extrabold text-amber-400">${idx + 1}</td>
-            <td class="p-3 font-bold text-slate-200 flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-slate-800 border border-amber-500/30 text-amber-400 text-xs flex items-center justify-center font-bold">
-                ${st.name.charAt(0).toUpperCase()}
-              </span>
-              ${st.name}
-            </td>
-            <td class="p-3 text-slate-400 text-xs">${st.course || 'CSPC Student'}</td>
-            <td class="p-3 text-right font-black text-amber-400">+${st.points || 0} PTS</td>
-          `;
-          tbody.appendChild(row);
-        });
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <div class="relative w-full md:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500 text-sm"></i>
+          <input type="text" id="factSearchInput" oninput="filterFacts()" placeholder="Search keywords..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-100 focus:outline-none focus:border-cspcYellow">
+        </div>
+        <select id="factCategoryFilter" onchange="filterFacts()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cspcYellow">
+          <option value="ALL">All Categories</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Telecom">Telecom & Waves</option>
+          <option value="Computing">Computing & Digital</option>
+          <option value="Robotics">Robotics & Signals</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="factsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </section>
+
+  <!-- TAB 2: 10 MINI-GAMES DASHBOARD -->
+  <section id="section-games" class="hidden space-y-6">
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 class="font-heading text-2xl font-bold text-cspcYellow flex items-center gap-2">
+          <i class="fa-solid fa-gamepad"></i> Interactive Tech Skill Arcade
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Test your practical engineering and computer science skills with 10 continuous mini-games!</p>
+      </div>
+      <div id="antiCheatNotice" class="bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-shield-halved text-amber-400"></i>
+        <span>Anti-Cheat Active: Switching tabs during a game resets question & deducts -20 Pts!</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div onclick="launchGame(1)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition"><i class="fa-solid fa-palette"></i></div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">1. Resistor Color Decoder</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Identify resistance values from dynamic 4-band SVG resistors.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <div onclick="launchGame(2)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition"><i class="fa-solid fa-diagram-project"></i></div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">2. Schematic Symbol Matcher</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Match visual electrical schematic icons with proper names.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <div onclick="launchGame(3)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition"><i class="fa-solid fa-bolt"></i></div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">3. Ohm's Law Multimeter</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Calculate V, I, R circuit variables on dynamic meter dials.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <div onclick="launchGame(4)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition"><i class="fa-solid fa-toggle-on"></i></div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">4. Logic Gate Simulator</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Toggle A/B inputs and light up the LED using boolean logic.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <div onclick="launchGame(5)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition"><i class="fa-solid fa-microchip"></i></div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">5. PCB Component Finder</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Identify SMD vs DIP components on realistic circuit boards.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <div onclick="launchGame(6)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition"><i class="fa-solid fa-network-wired"></i></div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">6. Ethernet T568B Pinout</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Arrange RJ45 color wires in standard networking sequence.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <div onclick="launchGame(7)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition"><i class="fa-solid fa-01"></i></div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">7. Binary Bit Switcher</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Click 8-bit switches to match target decimal numbers.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <div onclick="launchGame(8)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition"><i class="fa-solid fa-wave-square"></i></div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">8. Oscilloscope Wave Lab</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Calculate frequency (f = 1/T) from animated oscilloscope sine waves.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <div onclick="launchGame(9)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition"><i class="fa-solid fa-icicles"></i></div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">9. Phase Shift Analyzer</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Master "ELI the ICE Man" AC voltage/current lead & lag rules.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <div onclick="launchGame(10)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition"><i class="fa-solid fa-stopwatch"></i></div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">10. Mastermind Speed Quiz</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Rapid-fire timed quiz covering multi-disciplinary engineering topics.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACTIVE MINI-GAME CONTAINER MODAL -->
+  <div id="gameModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl relative flex flex-col max-h-[92vh]">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div>
+          <h3 id="activeGameTitle" class="font-heading text-lg sm:text-xl font-bold text-cspcYellow">Mini Game</h3>
+          <p class="text-[11px] text-slate-400">Earn +15 Pts per correct answer • Continuous Random Loop</p>
+        </div>
+        <button onclick="closeGameModal()" class="text-slate-400 hover:text-white p-2 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div id="gameAntiCheatStatus" class="hidden mb-3 bg-red-500/10 border border-red-500/30 text-red-300 p-2 rounded-xl text-xs flex items-center justify-between">
+        <span id="gameAntiCheatMsg"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Anti-Cheat Triggered! -20 Pts</span>
+      </div>
+
+      <div id="gameStage" class="flex-1 overflow-y-auto custom-scrollbar p-2 bg-slate-950/60 rounded-xl border border-slate-800 flex flex-col justify-center items-center"></div>
+
+      <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+        <div id="gameFeedback" class="text-xs font-semibold text-slate-300">Get ready...</div>
+        <button onclick="nextGameQuestion()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-700 text-slate-200">Skip / Next Question</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: LIVE LEADERBOARD -->
+  <section id="section-leaderboard" class="hidden space-y-6">
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+      <div>
+        <h2 class="font-heading text-2xl font-bold text-cspcYellow flex items-center gap-2"><i class="fa-solid fa-trophy"></i> Open Universal Leaderboard</h2>
+        <p class="text-xs text-slate-400 mt-1">Real-time ranking of registered CSPC students across all programs.</p>
+      </div>
+      <button onclick="renderLeaderboard()" class="bg-slate-800 hover:bg-slate-700 text-xs font-semibold px-4 py-2 rounded-xl border border-slate-700 text-cspcYellow flex items-center gap-2">
+        <i class="fa-solid fa-rotate"></i> Refresh Ranks
+      </button>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs sm:text-sm">
+          <thead class="bg-slate-800/80 text-slate-300 uppercase text-[10px] tracking-wider border-b border-slate-700">
+            <tr>
+              <th class="py-3 px-4">Rank</th>
+              <th class="py-3 px-4">Participant</th>
+              <th class="py-3 px-4">Course / Dept / School</th>
+              <th class="py-3 px-4 text-right">Total Score</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardTbody" class="divide-y divide-slate-800/60"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: HTML5 CANVAS CERTIFICATE GENERATOR -->
+  <section id="section-certificate" class="hidden space-y-6">
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl">
+      <div>
+        <h2 class="font-heading text-2xl font-bold text-cspcYellow flex items-center gap-2"><i class="fa-solid fa-award"></i> Official CSPC Certificate of Completion</h2>
+        <p class="text-xs text-slate-400 mt-1">Earn at least 50 points to unlock and generate your official downloadable certificate!</p>
+      </div>
+      <button onclick="generateCertificate()" class="bg-cspcYellow hover:bg-cspcYellow-hover text-slate-950 font-extrabold px-5 py-2.5 rounded-xl shadow-lg transition text-xs flex items-center gap-2">
+        <i class="fa-solid fa-download"></i> Download PNG Certificate
+      </button>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center shadow-2xl">
+      <div class="w-full max-w-3xl overflow-hidden rounded-xl border-2 border-cspcYellow/40 shadow-2xl bg-black">
+        <canvas id="certCanvas" width="1200" height="850" class="w-full h-auto block"></canvas>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="bg-slate-900 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p>&copy; 2026 Camarines Sur Polytechnic Colleges (CSPC) • Multi-Disciplinary Tech Hub</p>
+    <p class="text-slate-400">Open to BS ECE, IT, CS, Engineering, SHS, and All Tech Visitors</p>
+  </div>
+</footer>
+
+<div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 border border-cspcYellow text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs">
+  <i id="toastIcon" class="fa-solid fa-circle-check text-cspcYellow text-lg"></i>
+  <span id="toastMsg">Action completed successfully!</span>
+</div>
+
+<script>
+// STORAGE KEYS & FIREBASE INITIALIZATION
+const STORAGE_KEY_USER = 'CSPC_HUB_USER_REGISTERED_V3';
+const STORAGE_KEY_FACTS = 'CSPC_HUB_FACTS_PROGRESS_V3';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBEr2mqdAAEc3U0u5G9QWANvrhWkpOhHjQ",
+  authDomain: "cspc-ece-facts.firebaseapp.com",
+  databaseURL: "https://cspc-ece-facts-default-rtdb.firebaseio.com",
+  projectId: "cspc-ece-facts",
+  storageBucket: "cspc-ece-facts.firebasestorage.app",
+  messagingSenderId: "925350696657",
+  appId: "1:925350696657:web:5586ce52d7567cba0517f0",
+  measurementId: "G-2M0PEC1X1E"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+
+let currentUser = null;
+let learnedFactIds = [];
+let activeGameId = null;
+let activeGameData = null;
+
+// HTML5 AUDIO PLAYER FOR BGM.MP3
+let bgmAudio = new Audio('bgm.mp3');
+bgmAudio.loop = true;
+let isAudioPlaying = false;
+
+function toggleAudio() {
+  if (!isAudioPlaying) {
+    bgmAudio.play().then(() => {
+      isAudioPlaying = true;
+      document.getElementById('audioText').textContent = "BGM: Playing";
+      document.getElementById('audioIcon').className = "fa-solid fa-volume-high text-cspcYellow";
+    }).catch(err => console.log("Audio file playback waiting for user click:", err));
+  } else {
+    bgmAudio.pause();
+    isAudioPlaying = false;
+    document.getElementById('audioText').textContent = "BGM: Off";
+    document.getElementById('audioIcon').className = "fa-solid fa-volume-xmark";
+  }
+}
+
+const FACTS_DATABASE = [
+  { id: 1, cat: "Electronics", title: "Electron Mobility", desc: "Gallium Arsenide (GaAs) has electron mobility 6 times higher than Silicon, making it ideal for high-frequency RF devices." },
+  { id: 2, cat: "Telecom", title: "Shannon-Hartley Theorem", desc: "Defines maximum theoretical data rate of a channel: C = B * log2(1 + SNR), fundamental to 5G and Wi-Fi." },
+  { id: 3, cat: "Computing", title: "Moore's Law", desc: "Observation by Gordon Moore stating transistor counts on microchips double roughly every two years." },
+  { id: 4, cat: "Robotics", title: "PID Controllers", desc: "Proportional-Integral-Derivative control loops are used in 95% of industrial automation and drone flight controllers." },
+  { id: 5, cat: "Electronics", title: "PN Junction Barrier", desc: "Silicon diodes require approximately 0.7V forward bias voltage, while Germanium diodes require only 0.3V." },
+  { id: 6, cat: "Telecom", title: "Optical Fiber Total Internal Reflection", desc: "Light pulses travel through glass fiber cores without escaping due to higher refractive index in the core than cladding." },
+  { id: 7, cat: "Computing", title: "Floating Point IEEE 754", desc: "Standard format representation for real numbers in computers using sign, exponent, and mantissa bits." },
+  { id: 8, cat: "Electronics", title: "MOSFET Gate Insulation", desc: "Metal-Oxide-Semiconductor Field-Effect Transistors use ultrathin Silicon Dioxide (SiO2) as an insulating gate barrier." },
+  { id: 9, cat: "Robotics", title: "Pulse Width Modulation (PWM)", desc: "Drives DC motors and LEDs by rapidly switching power on and off to vary effective duty cycle percentage." },
+  { id: 10, cat: "Telecom", title: "Fresnel Zone Clearance", desc: "Ellipsoidal region between transmitter and receiver antenna requiring 60%+ obstruction clearance for clear microwave links." },
+  { id: 11, cat: "Computing", title: "Von Neumann Architecture", desc: "Computer design using a single memory bus for both instruction data and program memory." },
+  { id: 12, cat: "Electronics", title: "Zener Diode Breakdown", desc: "Designed to operate safely in reverse breakdown mode to provide stable reference voltages in regulator circuits." },
+  { id: 13, cat: "Telecom", title: "Nyquist Sampling Rate", desc: "To accurately reconstruct an analog signal without aliasing, sample frequency must be at least twice max signal frequency (fs >= 2fmax)." },
+  { id: 14, cat: "Robotics", title: "Inverse Kinematics", desc: "Mathematical process of calculating required joint angles of a robotic arm to reach a target 3D spatial coordinate." },
+  { id: 15, cat: "Electronics", title: "SMD vs DIP Components", desc: "Surface Mount Devices (SMD) reduce PCB footprint size by up to 70% compared to traditional Dual In-line Package (DIP) components." },
+  { id: 16, cat: "Computing", title: "RISC vs CISC Processors", desc: "Reduced Instruction Set Computers (ARM) execute simple cycles faster, whereas CISC (x86) handle complex multi-step instructions." },
+  { id: 17, cat: "Telecom", title: "Cellular Frequency Reuse", desc: "Mobile networks reuse identical frequency bands in non-adjacent geographic hexagonal cells to maximize capacity." },
+  { id: 18, cat: "Electronics", title: "Capacitance Energy Storage", desc: "Energy stored in an electric field of a capacitor is calculated using E = 0.5 * C * V^2." },
+  { id: 19, cat: "Robotics", title: "LIDAR Distance Sensing", desc: "Light Detection and Ranging uses pulsed laser beams to calculate distance based on time-of-flight reflections." },
+  { id: 20, cat: "Computing", title: "Turing Completeness", desc: "A computational system is Turing Complete if it can simulate any single-tapped Turing machine regardless of speed." },
+  { id: 21, cat: "Electronics", title: "Op-Amp Golden Rules", desc: "An ideal operational amplifier draws zero input current (I=0) and maintains zero voltage differential across inputs in closed feedback." },
+  { id: 22, cat: "Telecom", title: "Decibel (dB) Power Scale", desc: "3 dB increase represents a doubling of electrical power, while 10 dB increase represents a tenfold power increase." },
+  { id: 23, cat: "Computing", title: "Little Endian Byte Order", desc: "Stores the least significant byte at the lowest memory address (standard in modern x86 and ARM processors)." },
+  { id: 24, cat: "Electronics", title: "Inductive Reactance Formula", desc: "Opposition to AC current in inductors increases proportionally with frequency: XL = 2 * π * f * L." },
+  { id: 25, cat: "Robotics", title: "IMU Gyroscope & Accelerometer", desc: "Inertial Measurement Units combine 3-axis accelerometers and gyroscopes for drone pitch, roll, and yaw orientation." },
+  { id: 26, cat: "Telecom", title: "QAM Modulation", desc: "Quadrature Amplitude Modulation alters both carrier amplitude and phase to pack multiple bits per symbol." },
+  { id: 27, cat: "Computing", title: "DMA Direct Memory Access", desc: "Allows hardware devices to transfer data directly to RAM without burdening CPU processing cycles." },
+  { id: 28, cat: "Electronics", title: "Resistor Color Codes", desc: "Standard 4-band scheme: Black (0), Brown (1), Red (2), Orange (3), Yellow (4), Green (5), Blue (6), Violet (7), Grey (8), White (9)." },
+  { id: 29, cat: "Electronics", title: "Schottky Diode Speed", desc: "Uses metal-semiconductor junction instead of PN junction, delivering extremely fast switching speeds and ultra-low forward drop." },
+  { id: 30, cat: "Telecom", title: "Geostationary Orbit (GEO)", desc: "Satellites orbit 35,786 km above equator matching Earth rotation, remaining fixed relative to ground dish antennas." },
+  { id: 31, cat: "Computing", title: "SRAM vs DRAM", desc: "Static RAM uses flip-flops for superfast cache speed; Dynamic RAM uses tiny capacitors requiring continuous refresh cycles." },
+  { id: 32, cat: "Robotics", title: "Stepper Motor Steps", desc: "Brushless DC motors that divide full rotations into equal steps (typically 1.8° per step or 200 steps/rev) for precise CNC positioning." },
+  { id: 33, cat: "Electronics", title: "555 Timer IC Modes", desc: "Can operate in Monostable (one-shot pulse), Astable (free-running clock square wave), or Bistable (flip-flop) configurations." },
+  { id: 34, cat: "Telecom", title: "Skin Effect in Conductors", desc: "At high RF frequencies, alternating current concentrates primarily near the outer conductor surface, increasing resistance." },
+  { id: 35, cat: "Computing", title: "GPU Parallel Processing", desc: "GPUs feature thousands of smaller cores designed to process matrix/tensor mathematical calculations simultaneously." },
+  { id: 36, cat: "Robotics", title: "CAN Bus Protocol", desc: "Controller Area Network is a robust differential vehicle bus standard allowing microcontrollers to communicate without host PCs." },
+  { id: 37, cat: "Electronics", title: "Transformer Turns Ratio", desc: "Voltage ratio equals secondary turns divided by primary turns: Vp/Vs = Np/Ns." },
+  { id: 38, cat: "Telecom", title: "Electromagnetic Spectrum", desc: "Radio waves possess the longest wavelengths and lowest energy, while Gamma rays have shortest wavelengths and highest energy." },
+  { id: 39, cat: "Computing", title: "Solid State Drive NAND Flash", desc: "Non-volatile storage traps electrical charge in floating-gate or charge-trap memory cells to retain data without power." },
+  { id: 40, cat: "Electronics", title: "LC Circuit Resonance", desc: "Resonant frequency occurs when capacitive reactance equals inductive reactance: fr = 1 / (2 * π * sqrt(L * C))." },
+  { id: 41, cat: "Robotics", title: "H-Bridge Motor Driver", desc: "Electronic circuit switching 4 switches to reverse current direction through a DC motor for forward/backward rotation." },
+  { id: 42, cat: "Telecom", title: "Waveguide Transmission", desc: "Hollow metal pipes used to guide high-power microwave signals with lower attenuation loss than coaxial cables." },
+  { id: 43, cat: "Computing", title: "Quantum Qubits", desc: "Unlike classical bits (0 or 1), quantum bits leverage superposition to exist in states combining 0 and 1 simultaneously." },
+  { id: 44, cat: "Electronics", title: "Superconductivity Threshold", desc: "Certain materials lose all electrical resistance and expel magnetic flux below critical transition temperatures." },
+  { id: 45, cat: "Telecom", title: "Smith Chart Tool", desc: "Polar graphical chart used by RF engineers to solve complex impedance matching and transmission line problems." },
+  { id: 46, cat: "Robotics", title: "ROS (Robot Operating System)", desc: "Open-source middleware framework providing hardware abstraction, device drivers, and message passing between robot nodes." },
+  { id: 47, cat: "Computing", title: "Error Correcting Code (ECC) RAM", desc: "Detects and corrects single-bit memory corruption errors using parity check bits in mission-critical servers." },
+  { id: 48, cat: "Electronics", title: "Thermal Noise (Johnson Noise)", desc: "Electronic noise generated by thermal agitation of charge carriers inside electrical conductors regardless of voltage." },
+  { id: 49, cat: "Telecom", title: "Fiber Optic WDM Multiplexing", desc: "Wavelength Division Multiplexing transmits multiple optical carrier signals on a single fiber using different laser light colors." },
+  { id: 50, cat: "Computing", title: "FPGA Programmable Logic", desc: "Field Programmable Gate Arrays contain reconfigurable logic blocks connected via programmable interconnects." },
+  { id: 51, cat: "Robotics", title: "Encoder Feedback Systems", desc: "Optical or magnetic rotary encoders provide real-time velocity and angular position feedback to closed-loop servos." },
+  { id: 52, cat: "Electronics", title: "Kirchhoff's Current Law (KCL)", desc: "Total electrical current entering a junction or node equals total current leaving that same node (Conservation of Charge)." }
+];
+
+window.onload = function() {
+  loadProfileFromStorage();
+  loadFactsProgress();
+  renderFactsGrid();
+  initAntiCheatListener();
+  drawDefaultCertificateCanvas();
+
+  // Attach Firebase Realtime Listener
+  db.ref("students").on("value", (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      let cloudList = Object.values(data).filter(st => {
+        if (!st.name) return false;
+        const lower = st.name.toLowerCase();
+        return !lower.includes("guest") && !lower.includes("visiting");
       });
+      localStorage.setItem("CSPC_LEADERBOARD_MOCK", JSON.stringify(cloudList));
+      renderLeaderboard();
     }
+  });
 
-    // 6. PROFILE & DATABASE WRITE
-    function saveProfile(e) {
-      e.preventDefault();
-      const name = document.getElementById('inputName').value.trim();
-      const email = document.getElementById('inputEmail').value.trim();
-      const course = document.getElementById('inputCourse').value.trim();
+  if (!currentUser) {
+    openOnboardingModal();
+  }
+};
 
-      if (!name || !email || !course) return;
+function loadProfileFromStorage() {
+  const saved = localStorage.getItem(STORAGE_KEY_USER);
+  if (saved) {
+    try {
+      currentUser = JSON.parse(saved);
+      updateNavProfileUI();
+    } catch(e) { currentUser = null; }
+  }
+}
 
-      currentUser = {
-        name: name,
-        email: email,
-        course: course,
-        points: currentUser ? (currentUser.points || 50) : 50
-      };
+function updateNavProfileUI() {
+  if (currentUser) {
+    document.getElementById('navUserName').textContent = currentUser.name;
+    document.getElementById('navUserPoints').textContent = `+${currentUser.points || 0} PTS`;
+    document.getElementById('navAvatarImg').src = currentUser.avatar || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%233b82f6'/></svg>";
+    
+    document.getElementById('inputName').value = currentUser.name || '';
+    document.getElementById('inputEmail').value = currentUser.email || '';
+    document.getElementById('inputCourse').value = currentUser.course || '';
+  }
+}
 
-      localStorage.setItem('cspc_registered_user', JSON.stringify(currentUser));
-      updateUI();
-      writeToFirebase();
-      closeProfileModal();
-    }
+function openOnboardingModal() {
+  document.getElementById('onboardingModal').classList.remove('hidden');
+}
 
-    function addPoints(pts) {
-      if (!currentUser) {
-        openProfileModal();
-        return;
-      }
-      currentUser.points = (currentUser.points || 50) + pts;
-      localStorage.setItem('cspc_registered_user', JSON.stringify(currentUser));
-      updateUI();
-      writeToFirebase();
-    }
+function closeOnboardingModal() {
+  if (!currentUser) {
+    alert("You must complete student registration to continue.");
+    return;
+  }
+  document.getElementById('onboardingModal').classList.add('hidden');
+}
 
-    function writeToFirebase() {
-      if (!currentUser || !currentUser.email) return;
-      const key = currentUser.email.replace(/[.#$\[\]]/g, "_");
-      database.ref('students/' + key).set({
-        name: currentUser.name,
-        email: currentUser.email,
-        course: currentUser.course,
-        points: currentUser.points || 50,
-        lastUpdated: new Date().toISOString()
-      });
-    }
+function saveProfile(e) {
+  e.preventDefault();
+  const name = document.getElementById('inputName').value.trim();
+  const email = document.getElementById('inputEmail').value.trim();
+  const course = document.getElementById('inputCourse').value.trim();
 
-    // 7. UI CONTROLS
-    function updateUI() {
-      if (currentUser) {
-        document.getElementById('navName').textContent = currentUser.name;
-        document.getElementById('navScore').textContent = `+${currentUser.points || 0} PTS`;
-        document.getElementById('navAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
-        document.getElementById('certName').textContent = currentUser.name;
-        document.getElementById('certScore').textContent = `+${currentUser.points || 0} PTS`;
-        document.getElementById('certDate').textContent = new Date().toLocaleDateString();
-      } else {
-        document.getElementById('navName').textContent = "Not Registered";
-        document.getElementById('navScore').textContent = "+0 PTS";
-        document.getElementById('navAvatar').textContent = "?";
-      }
-    }
+  if (!name || !email || !course) return;
 
-    function openProfileModal() {
-      if (currentUser) {
-        document.getElementById('inputName').value = currentUser.name;
-        document.getElementById('inputEmail').value = currentUser.email;
-        document.getElementById('inputCourse').value = currentUser.course;
-      }
-      document.getElementById('profileModal').classList.remove('hidden');
-    }
+  currentUser = {
+    name: name,
+    email: email,
+    course: course,
+    avatar: currentUser ? (currentUser.avatar || "") : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%233b82f6'/></svg>",
+    points: currentUser ? (currentUser.points || 50) : 50
+  };
+  
+  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(currentUser));
+  updateNavProfileUI();
+  syncScoreToCloud();
+  closeOnboardingModal();
+  showToast("Profile saved and synced successfully!");
+}
 
-    function closeProfileModal() {
-      if (!currentUser) {
-        alert("Please complete registration to access the CSPC Tech Hub.");
-        return;
-      }
-      document.getElementById('profileModal').classList.add('hidden');
-    }
+function syncScoreToCloud() {
+  if (!currentUser || !currentUser.email) return;
+  const userKey = currentUser.email.replace(/[\.\#\$\/\[\]]/g, "_");
+  
+  db.ref("students/" + userKey).set({
+    name: currentUser.name,
+    email: currentUser.email,
+    course: currentUser.course,
+    points: currentUser.points || 50,
+    avatar: currentUser.avatar,
+    lastUpdated: Date.now()
+  });
+}
 
-    function switchTab(tab) {
-      document.getElementById('sec-leaderboard').classList.toggle('hidden', tab !== 'leaderboard');
-      document.getElementById('sec-facts').classList.toggle('hidden', tab !== 'facts');
-      document.getElementById('sec-games').classList.toggle('hidden', tab !== 'games');
-      document.getElementById('sec-certificate').classList.toggle('hidden', tab !== 'certificate');
+function setAvatarMode(mode) {
+  document.getElementById('avatarPresetsSection').classList.toggle('hidden', mode !== 'preset');
+  document.getElementById('avatarUploadSection').classList.toggle('hidden', mode !== 'upload');
+  document.getElementById('avatarCameraSection').classList.toggle('hidden', mode !== 'camera');
+  
+  document.getElementById('btnAvatarPreset').className = mode === 'preset' ? "py-2 text-xs font-bold rounded-xl border border-cspcYellow bg-slate-800 text-cspcYellow" : "py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-400";
+  document.getElementById('btnAvatarUpload').className = mode === 'upload' ? "py-2 text-xs font-bold rounded-xl border border-cspcYellow bg-slate-800 text-cspcYellow" : "py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-400";
+  document.getElementById('btnAvatarCam').className = mode === 'camera' ? "py-2 text-xs font-bold rounded-xl border border-cspcYellow bg-slate-800 text-cspcYellow" : "py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-400";
 
-      ['leaderboard', 'facts', 'games', 'certificate'].forEach(t => {
-        const btn = document.getElementById('tab-' + t);
-        if (t === tab) {
-          btn.className = "py-2 px-4 border-b-2 border-amber-500 text-amber-400 font-bold flex items-center gap-2 whitespace-nowrap";
-        } else {
-          btn.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2 whitespace-nowrap";
-        }
-      });
-    }
+  if (mode === 'camera') startWebcam();
+}
 
-    // INITIALIZATION
-    window.onload = () => {
-      renderFacts();
-      renderGames();
-      updateUI();
-      syncLeaderboard();
+function selectPresetAvatar(src) {
+  if (!currentUser) currentUser = { points: 50 };
+  currentUser.avatar = src;
+  showToast("Avatar preset selected!");
+}
 
-      if (!currentUser) {
-        openProfileModal();
-      } else {
-        writeToFirebase();
-      }
+function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      if (!currentUser) currentUser = { points: 50 };
+      currentUser.avatar = evt.target.result;
+      showToast("Custom photo uploaded!");
     };
-  </script>
-</body>
-</html>
+    reader.readAsDataURL(file);
+  }
+}
+
+function startWebcam() {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => { document.getElementById('webcamVideo').srcObject = stream; })
+    .catch(err => showToast("Unable to access camera."));
+}
+
+function captureWebcam() {
+  const video = document.getElementById('webcamVideo');
+  const canvas = document.createElement('canvas');
+  canvas.width = 150; canvas.height = 150;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, 150, 150);
+  if (!currentUser) currentUser = { points: 50 };
+  currentUser.avatar = canvas.toDataURL('image/png');
+  showToast("Webcam photo snapped!");
+}
+
+function loadFactsProgress() {
+  const saved = localStorage.getItem(STORAGE_KEY_FACTS);
+  if (saved) {
+    try { learnedFactIds = JSON.parse(saved); } catch(e){}
+  }
+}
+
+function renderFactsGrid() {
+  const container = document.getElementById('factsGrid');
+  const query = document.getElementById('factSearchInput').value.toLowerCase();
+  const category = document.getElementById('factCategoryFilter').value;
+
+  container.innerHTML = '';
+
+  FACTS_DATABASE.forEach(fact => {
+    const matchesSearch = fact.title.toLowerCase().includes(query) || fact.desc.toLowerCase().includes(query);
+    const matchesCat = category === 'ALL' || fact.cat === category;
+
+    if (matchesSearch && matchesCat) {
+      const isLearned = learnedFactIds.includes(fact.id);
+      const card = document.createElement('div');
+      card.className = `bg-slate-900 border ${isLearned ? 'border-emerald-500/50 bg-emerald-950/10' : 'border-slate-800'} rounded-2xl p-5 flex flex-col justify-between shadow-lg hover:border-cspcYellow/40 transition`;
+      
+      card.innerHTML = `
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-cspcYellow bg-cspcYellow/10 px-2.5 py-1 rounded-full border border-cspcYellow/20">Fact #${fact.id} • ${fact.cat}</span>${isLearned ? '<span class="text-xs text-emerald-400 font-bold flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Learned</span>' : ''}
+          </div>
