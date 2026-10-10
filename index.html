@@ -1324,16 +1324,25 @@ function syncScoreToCloud() {
 
 function renderLeaderboard() {
   const tbody = document.getElementById('leaderboardTbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
   let list = JSON.parse(localStorage.getItem('CSPC_LEADERBOARD_MOCK') || '[]');
   
-   // Sort descending
+  // Strictly filter out dummy bot accounts or guest entries
+  list = list.filter(st => st && st.name && !['maria santos', 'john doe', 'alex rivera', 'guest student', 'guest'].includes(st.name.toLowerCase()));
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-500">No registered students yet. Be the first to register!</td></tr>`;
+    return;
+  }
+
+  // Sort descending by points
   list.sort((a,b) => (b.points || 0) - (a.points || 0));
 
   list.forEach((st, idx) => {
     const tr = document.createElement('tr');
-    tr.className = st.email === currentUser.email ? "bg-cspcBlue/20 font-bold" : "hover:bg-slate-800/40 transition";
+    tr.className = (currentUser && st.email === currentUser.email) ? "bg-cspcBlue/30 font-bold" : "hover:bg-slate-800/40 transition";
     tr.innerHTML = `
       <td class="py-3 px-4 flex items-center gap-2">
         <span class="w-6 h-6 rounded-full ${idx === 0 ? 'bg-amber-400 text-slate-950 font-extrabold' : 'bg-slate-800 text-slate-400'} flex items-center justify-center text-xs">
@@ -1342,11 +1351,11 @@ function renderLeaderboard() {
       </td>
       <td class="py-3 px-4">
         <div class="flex items-center gap-2">
-          <img src="${st.avatar || currentUser.avatar}" class="w-6 h-6 rounded-full border border-cspcYellow object-cover">
+          <img src="${st.avatar || (currentUser ? currentUser.avatar : '')}" class="w-6 h-6 rounded-full border border-cspcYellow object-cover">
           <span>${st.name}</span>
         </div>
       </td>
-      <td class="py-3 px-4 text-slate-400 text-xs">${st.course || 'Open Program'}</td>
+      <td class="py-3 px-4 text-slate-400 text-xs">${st.course || 'CSPC Student'}</td>
       <td class="py-3 px-4 text-right font-extrabold text-cspcYellow">+${st.points || 0} PTS</td>
     `;
     tbody.appendChild(tr);
