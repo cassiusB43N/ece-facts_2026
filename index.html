@@ -1308,20 +1308,6 @@ function checkGame10Answer(ans) {
   setTimeout(nextGameQuestion, 1200);
 }
 
-function syncScoreToCloud() {
-  // Sync to local mock array for universal persistence
-  let localBoard = JSON.parse(localStorage.getItem('CSPC_LEADERBOARD_MOCK') || '[]');
-  
-  const existingIdx = localBoard.findIndex(item => item.email === currentUser.email);
-  if (existingIdx !== -1) {
-    localBoard[existingIdx] = currentUser;
-  } else {
-    localBoard.push(currentUser);
-  }
-  
-  localStorage.setItem('CSPC_LEADERBOARD_MOCK', JSON.stringify(localBoard));
-}
-
 function renderLeaderboard() {
   const tbody = document.getElementById('leaderboardTbody');
   if (!tbody) return;
@@ -1539,17 +1525,32 @@ const db = firebase.database();
 
 // Live Cross-Device Cloud Score Sync Function
 function syncScoreToCloud() {
-  if (!currentUser.email) return;
-  const userKey = currentUser.email.replace(/[\.\#\$\/\[\]]/g, "_");
-  
-  db.ref("students/" + userKey).set({
-    name: currentUser.name,
-    email: currentUser.email,
-    course: currentUser.course,
-    points: currentUser.points,
-    avatar: currentUser.avatar,
-    lastUpdated: Date.now()
-  });
+  if (!currentUser || !currentUser.email) return;
+
+  // 1. Update Local Board state immediately
+  let localBoard = JSON.parse(localStorage.getItem('CSPC_LEADERBOARD_MOCK') || '[]');
+  const existingIdx = localBoard.findIndex(item => item && item.email === currentUser.email);
+  if (existingIdx !== -1) {
+    localBoard[existingIdx] = currentUser;
+  } else {
+    localBoard.push(currentUser);
+  }
+  localStorage.setItem('CSPC_LEADERBOARD_MOCK', JSON.stringify(localBoard));
+
+  // 2. Write to Firebase Realtime Database
+  if (!currentUser.email.includes('guest')) {
+    const userKey = currentUser.email.replace(/[\.\#\$\/\[\]]/g, "_");
+    db.ref("students/" + userKey).set({
+      name: currentUser.name,
+      email: currentUser.email,
+      course: currentUser.course,
+      points: currentUser.points || 50,
+      avatar: currentUser.avatar,
+      lastUpdated: Date.now()
+    });
+  }
+
+  renderLeaderboard();
 }
 
 // Live Leaderboard Realtime Listener
