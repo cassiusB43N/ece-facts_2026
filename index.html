@@ -1448,52 +1448,45 @@ function generateCertificate() {
   showToast("Certificate PNG downloaded!");
 }
 
-// BGM CHIPTUNE AUDIO SYNTHESIZER
+// REAL BGM MP3 AUDIO CONTROLLER
+let bgmAudio = new Audio('bgm.mp3');
+bgmAudio.loop = true;
+let isAudioPlaying = false;
+
 function toggleAudio() {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  const btnText = document.getElementById('audioText');
+  const btnIcon = document.getElementById('audioIcon');
 
-  if (isAudioPlaying) {
-    if (audioOscillator) audioOscillator.stop();
-    isAudioPlaying = false;
-    document.getElementById('audioText').textContent = "BGM: Off";
-    document.getElementById('audioIcon').className = "fa-solid fa-volume-xmark";
+  if (!isAudioPlaying) {
+    bgmAudio.play().then(() => {
+      isAudioPlaying = true;
+      if (btnText) btnText.textContent = "BGM: Playing";
+      if (btnIcon) btnIcon.className = "fa-solid fa-volume-high text-cspcYellow";
+    }).catch(err => {
+      console.error("Audio playback error:", err);
+      if (typeof showToast === "function") showToast("Make sure bgm.mp3 is uploaded in GitHub root!");
+    });
   } else {
-    playChiptuneBgm();
-    isAudioPlaying = true;
-    document.getElementById('audioText').textContent = "BGM: Playing";
-    document.getElementById('audioIcon').className = "fa-solid fa-volume-high text-cspcYellow";
+    bgmAudio.pause();
+    isAudioPlaying = false;
+    if (btnText) btnText.textContent = "BGM: Off";
+    if (btnIcon) btnIcon.className = "fa-solid fa-volume-xmark";
   }
 }
 
-function playChiptuneBgm() {
-  const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88]; // C Major notes
-  let noteIdx = 0;
-
-  function nextNote() {
-    if (!isAudioPlaying) return;
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(notes[noteIdx % notes.length], audioContext.currentTime);
-    
-    gain.gain.setValueAtTime(0.02, audioContext.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.25);
-
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-
-    osc.start();
-    osc.stop(audioContext.currentTime + 0.25);
-
-    noteIdx++;
-    setTimeout(nextNote, 300);
+// Bypasses browser autoplay restrictions on the first click anywhere on page
+document.addEventListener('click', function startAudioOnFirstUserInteraction() {
+  if (!isAudioPlaying) {
+    bgmAudio.play().then(() => {
+      isAudioPlaying = true;
+      const btnText = document.getElementById('audioText');
+      const btnIcon = document.getElementById('audioIcon');
+      if (btnText) btnText.textContent = "BGM: Playing";
+      if (btnIcon) btnIcon.className = "fa-solid fa-volume-high text-cspcYellow";
+    }).catch(() => {});
   }
-
-  nextNote();
-}
+  document.removeEventListener('click', startAudioOnFirstUserInteraction);
+}, { once: true });
 
 // TOAST UTILITY
 function showToast(msg) {
