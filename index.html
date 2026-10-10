@@ -1451,7 +1451,7 @@ function generateCertificate() {
 // REAL BGM MP3 AUDIO CONTROLLER
 let bgmAudio = new Audio('bgm.mp3');
 bgmAudio.loop = true;
-let isAudioPlaying = false;
+isAudioPlaying = false; // Re-use existing declared variable
 
 function toggleAudio() {
   const btnText = document.getElementById('audioText');
@@ -1464,7 +1464,7 @@ function toggleAudio() {
       if (btnIcon) btnIcon.className = "fa-solid fa-volume-high text-cspcYellow";
     }).catch(err => {
       console.error("Audio playback error:", err);
-      if (typeof showToast === "function") showToast("Make sure bgm.mp3 is uploaded in GitHub root!");
+      if (typeof showToast === "function") showToast("Ensure bgm.mp3 is uploaded in GitHub root!");
     });
   } else {
     bgmAudio.pause();
