@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSPC Multi-Disciplinary Tech & ECE Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Firebase SDKs for Cloud Leaderboard Sync -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cspcBlue: { DEFAULT: '#1e3a8a', dark: '#0f172a', light: '#3b82f6' },
+            cspcYellow: { DEFAULT: '#fbbf24', hover: '#f59e0b', light: '#fef08a' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .font-heading { font-family: 'Fredoka', cursive, sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 9999px; }
+    .glow-effect { box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
+    .glow-blue { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+  </style>
+</head>
+<body class="h-full flex flex-col justify-between overflow-x-hidden bg-slate-950 text-slate-100">
+
+<!-- Header Navbar -->
+<header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('facts')">
+      <div class="bg-cspcYellow p-2 rounded-xl text-cspcBlue flex items-center justify-center font-bold">
+        <i class="fa-solid fa-microchip text-2xl"></i>
+      </div>
+      <div>
+        <h1 class="font-heading text-xl md:text-2xl font-bold tracking-wide text-cspcYellow leading-none">CSPC TECH HUB</h1>
+        <p class="text-xs text-slate-400">Camarines Sur Polytechnic Colleges & Open Tech Portal</p>
+      </div>
+    </div>
+
+    <!-- Active User Status / Stats -->
+    <div class="flex items-center gap-4">
+      <button onclick="toggleAudio()" id="audioBtn" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-cspcYellow px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-700 transition">
+        <i id="audioIcon" class="fa-solid fa-volume-xmark"></i>
+        <span id="audioText" class="hidden md:inline">BGM: Off</span>
+      </button>
+
+      <div id="navUserBadge" class="hidden sm:flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+        <img id="navAvatarImg" src="" class="w-6 h-6 rounded-full object-cover border border-cspcYellow" alt="Avatar">
+        <span id="navUserName" class="text-xs font-bold text-slate-200 max-w-[100px] truncate">Guest</span>
+        <span id="navUserPoints" class="bg-cspcYellow text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-extrabold">+0 PTS</span>
+      </div>
+
+      <button onclick="openOnboardingModal()" class="text-xs bg-cspcBlue hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold transition border border-blue-500/30">
+        <i class="fa-solid fa-user-pen mr-1"></i> Profile
+      </button>
+    </div>
+  </div>
+
+  <!-- Primary Navigation Tabs -->
+  <nav class="bg-slate-900 border-t border-slate-800/80 px-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-center sm:justify-start gap-1 md:gap-4 overflow-x-auto py-2 text-xs md:text-sm font-semibold">
+      <button onclick="switchTab('facts')" id="tab-facts" class="tab-btn px-4 py-2 rounded-lg transition text-cspcYellow bg-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-lightbulb"></i> 50+ Tech Facts
+      </button>
+      <button onclick="switchTab('games')" id="tab-games" class="tab-btn px-4 py-2 rounded-lg transition text-slate-400 hover:text-slate-200 flex items-center gap-2">
+        <i class="fa-solid fa-gamepad"></i> 10 Mini-Games
+      </button>
+      <button onclick="switchTab('leaderboard')" id="tab-leaderboard" class="tab-btn px-4 py-2 rounded-lg transition text-slate-400 hover:text-slate-200 flex items-center gap-2">
+        <i class="fa-solid fa-trophy"></i> Live Leaderboard
+      </button>
+      <button onclick="switchTab('certificate')" id="tab-certificate" class="tab-btn px-4 py-2 rounded-lg transition text-slate-400 hover:text-slate-200 flex items-center gap-2">
+        <i class="fa-solid fa-award"></i> Certificate
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- UNIVERSAL ONBOARDING MODAL -->
+<div id="onboardingModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+    <div class="text-center mb-6">
+      <div class="inline-block bg-cspcBlue p-3 rounded-2xl text-cspcYellow mb-2">
+        <i class="fa-solid fa-graduation-cap text-3xl"></i>
+      </div>
+      <h2 class="font-heading text-2xl font-bold text-slate-100">Welcome to CSPC Tech Hub</h2>
+      <p class="text-xs text-slate-400">Open to all students, faculty, and visiting tech enthusiasts!</p>
+    </div>
+
+    <form id="onboardingForm" onsubmit="saveProfile(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Full Name / Alias *</label>
+        <input type="text" id="inputName" required placeholder="e.g. Juan Dela Cruz" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cspcYellow">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Email Address *</label>
+        <input type="email" id="inputEmail" required placeholder="e.g. juan@cspc.edu.ph" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cspcYellow">
+      </div>
+
+      <!-- UNIVERSAL COURSE / SECTION / SCHOOL INPUT FIELD WITH AUTOCOMPLETE -->
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Course / Dept / School * <span class="text-[10px] text-cspcYellow font-normal">(Open to All)</span></label>
+        <input type="text" id="inputCourse" list="courseSuggestions" required placeholder="Type or select e.g., BS ECE 3A, BS IT, SHS STEM, Visitor" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cspcYellow">
+        <datalist id="courseSuggestions">
+          <option value="BS ECE - Electronics Engineering"></option>
+          <option value="BS IT - Information Technology"></option>
+          <option value="BS CS - Computer Science"></option>
+          <option value="BS EE - Electrical Engineering"></option>
+          <option value="BS ME - Mechanical Engineering"></option>
+          <option value="BS CpE - Computer Engineering"></option>
+          <option value="SHS - STEM Strand"></option>
+          <option value="CSPC Faculty / Staff"></option>
+          <option value="Visiting Student / External"></option>
+        </datalist>
+        <p class="text-[10px] text-slate-400 mt-1">Feel free to type your exact section or institution name!</p>
+      </div>
+
+      <!-- Avatar Picker -->
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase mb-2">Select Avatar Method</label>
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <button type="button" onclick="setAvatarMode('preset')" id="btnAvatarPreset" class="py-2 text-xs font-bold rounded-xl border border-cspcYellow bg-slate-800 text-cspcYellow">Mascot</button>
+          <button type="button" onclick="setAvatarMode('upload')" id="btnAvatarUpload" class="py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-400">Photo Upload</button>
+          <button type="button" onclick="setAvatarMode('camera')" id="btnAvatarCam" class="py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-400">Live Snap</button>
+        </div>
+
+        <!-- Mode 1: Presets -->
+        <div id="avatarPresetsSection" class="flex justify-around bg-slate-800 p-3 rounded-xl border border-slate-700">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%233b82f6'/><path d='M30 40 Q50 20 70 40 Q50 60 30 40' fill='%23fbbf24'/><circle cx='50' cy='40' r='10' fill='%23ffffff'/><circle cx='50' cy='40' r='5' fill='%230f172a'/></svg>" onclick="selectPresetAvatar(this.src)" class="w-12 h-12 rounded-full cursor-pointer hover:scale-110 transition border-2 border-cspcYellow p-1">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%2310b981'/><rect x='30' y='30' width='40' height='40' rx='10' fill='%23ffffff'/><circle cx='42' cy='45' r='5' fill='%230f172a'/><circle cx='58' cy='45' r='5' fill='%230f172a'/></svg>" onclick="selectPresetAvatar(this.src)" class="w-12 h-12 rounded-full cursor-pointer hover:scale-110 transition border-2 border-transparent hover:border-cspcYellow p-1">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%238b5cf6'/><polygon points='50,20 80,80 20,80' fill='%23fbbf24'/><circle cx='50' cy='55' r='8' fill='%23ffffff'/></svg>" onclick="selectPresetAvatar(this.src)" class="w-12 h-12 rounded-full cursor-pointer hover:scale-110 transition border-2 border-transparent hover:border-cspcYellow p-1">
+        </div>
+
+        <!-- Mode 2: Upload -->
+        <div id="avatarUploadSection" class="hidden bg-slate-800 p-3 rounded-xl border border-slate-700">
+          <input type="file" id="fileAvatar" accept="image/*" onchange="handleFileUpload(event)" class="text-xs text-slate-300 w-full">
+        </div>
+
+        <!-- Mode 3: Webcam -->
+        <div id="avatarCameraSection" class="hidden bg-slate-800 p-3 rounded-xl border border-slate-700 text-center">
+          <video id="webcamVideo" class="w-32 h-32 mx-auto rounded-lg bg-black object-cover mb-2" autoplay playsinline></video>
+          <button type="button" onclick="captureWebcam()" class="bg-cspcYellow text-slate-950 px-3 py-1 rounded text-xs font-bold">Snap Photo</button>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button type="submit" class="w-full bg-cspcYellow hover:bg-cspcYellow-hover text-slate-950 font-bold py-3 rounded-xl transition shadow-lg text-sm">Save Profile & Start Learning</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MAIN APP CONTENT AREA -->
+<main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+
+  <!-- TAB 1: 50+ ECE & TECH FACTS LIBRARY -->
+  <section id="section-facts" class="space-y-6">
+    <!-- Header Controls -->
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between shadow-xl">
+      <div>
+        <h2 class="font-heading text-2xl font-bold text-cspcYellow flex items-center gap-2">
+          <i class="fa-solid fa-book-open"></i> Verified 50+ Tech & ECE Knowledge Base
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Explore 52 engineering facts across electronics, telecommunications, computing, signal processing, and robotics.</p>
+      </div>
+
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <div class="relative w-full md:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500 text-sm"></i>
+          <input type="text" id="factSearchInput" oninput="filterFacts()" placeholder="Search keywords..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-100 focus:outline-none focus:border-cspcYellow">
+        </div>
+        <select id="factCategoryFilter" onchange="filterFacts()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cspcYellow">
+          <option value="ALL">All Categories</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Telecom">Telecom & Waves</option>
+          <option value="Computing">Computing & Digital</option>
+          <option value="Robotics">Robotics & Signals</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Facts Card Grid -->
+    <div id="factsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Dynamic JS injects facts here -->
+    </div>
+  </section>
+
+  <!-- TAB 2: 10 MINI-GAMES DASHBOARD -->
+  <section id="section-games" class="hidden space-y-6">
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 class="font-heading text-2xl font-bold text-cspcYellow flex items-center gap-2">
+          <i class="fa-solid fa-gamepad"></i> Interactive Tech Skill Arcade
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Test your practical engineering and computer science skills with 10 continuous mini-games!</p>
+      </div>
+      <div id="antiCheatNotice" class="bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-shield-halved text-amber-400"></i>
+        <span>Anti-Cheat Active: Switching tabs during a game resets question & deducts -20 Pts!</span>
+      </div>
+    </div>
+
+    <!-- Mini Games Card Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <!-- Game 1 Card -->
+      <div onclick="launchGame(1)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-palette"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">1. Resistor Color Decoder</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Identify resistance values from dynamic 4-band SVG resistors.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <!-- Game 2 Card -->
+      <div onclick="launchGame(2)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-diagram-project"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">2. Schematic Symbol Matcher</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Match visual electrical schematic icons with proper names.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <!-- Game 3 Card -->
+      <div onclick="launchGame(3)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">3. Ohm's Law Multimeter</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Calculate V, I, R circuit variables on dynamic meter dials.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <!-- Game 4 Card -->
+      <div onclick="launchGame(4)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-toggle-on"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">4. Logic Gate Simulator</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Toggle A/B inputs and light up the LED using boolean logic.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <!-- Game 5 Card -->
+      <div onclick="launchGame(5)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-microchip"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">5. PCB Component Finder</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Identify SMD vs DIP components on realistic circuit boards.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <!-- Game 6 Card -->
+      <div onclick="launchGame(6)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-network-wired"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">6. Ethernet T568B Pinout</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Arrange RJ45 color wires in standard networking sequence.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <!-- Game 7 Card -->
+      <div onclick="launchGame(7)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-01"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">7. Binary Bit Switcher</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Click 8-bit switches to match target decimal numbers.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <!-- Game 8 Card -->
+      <div onclick="launchGame(8)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-wave-square"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">8. Oscilloscope Wave Lab</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Calculate frequency (f = 1/T) from animated oscilloscope sine waves.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <!-- Game 9 Card -->
+      <div onclick="launchGame(9)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-icicles"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">9. Phase Shift Analyzer</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Master "ELI the ICE Man" AC voltage/current lead & lag rules.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+
+      <!-- Game 10 Card -->
+      <div onclick="launchGame(10)" class="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-cspcYellow/50 rounded-2xl p-5 cursor-pointer transition group flex flex-col justify-between shadow-lg">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-stopwatch"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-100 group-hover:text-cspcYellow transition">10. Mastermind Speed Quiz</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Rapid-fire timed quiz covering multi-disciplinary engineering topics.</p>
+        </div>
+        <span class="mt-4 inline-block text-[10px] font-bold uppercase text-cspcYellow bg-cspcYellow/10 px-2 py-1 rounded border border-cspcYellow/20 self-start">Play Game &rarr;</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACTIVE MINI-GAME CONTAINER MODAL -->
+  <div id="gameModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl relative flex flex-col max-h-[92vh]">
+      <!-- Game Modal Top Bar -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div>
+          <h3 id="activeGameTitle" class="font-heading text-lg sm:text-xl font-bold text-cspcYellow">Mini Game</h3>
+          <p class="text-[11px] text-slate-400">Earn +15 Pts per correct answer • Continuous Random Loop</p>
+        </div>
+        <button onclick="closeGameModal()" class="text-slate-400 hover:text-white p-2 text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Anti-Cheat Status Bar -->
+      <div id="gameAntiCheatStatus" class="hidden mb-3 bg-red-500/10 border border-red-500/30 text-red-300 p-2 rounded-xl text-xs flex items-center justify-between">
+        <span id="gameAntiCheatMsg"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Anti-Cheat Triggered! -20 Pts</span>
+      </div>
+
+      <!-- Game Stage Area -->
+      <div id="gameStage" class="flex-1 overflow-y-auto custom-scrollbar p-2 bg-slate-950/60 rounded-xl border border-slate-800 flex flex-col justify-center items-center">
+        <!-- Dynamic Game Layout Injected Here -->
+      </div>
+
+      <!-- Game Feedback & Score Footer -->
+      <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+        <div id="gameFeedback" class="text-xs font-semibold text-slate-300">
+          Get ready...
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="nextGameQuestion()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-700 text-slate-200">
+            Skip / Next Question
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: LIVE LEADERBOARD -->
+  <section id="section-leaderboard" class="hidden space-y-6">
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+      <div>
+        <h2 class="font-heading text-2xl font-bold text-cspcYellow flex items-center gap-2">
+          <i class="fa-solid fa-trophy"></i> Open Universal Leaderboard
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Real-time ranking of students, faculty, and participants across all programs.</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="renderLeaderboard()" class="bg-slate-800 hover:bg-slate-700 text-xs font-semibold px-4 py-2 rounded-xl border border-slate-700 text-cspcYellow flex items-center gap-2">
+          <i class="fa-solid fa-rotate"></i> Refresh Ranks
+        </button>
+      </div>
+    </div>
+
+    <!-- Leaderboard Table Card -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs sm:text-sm">
+          <thead class="bg-slate-800/80 text-slate-300 uppercase text-[10px] tracking-wider border-b border-slate-700">
+            <tr>
+              <th class="py-3 px-4">Rank</th>
+              <th class="py-3 px-4">Participant</th>
+              <th class="py-3 px-4">Course / Dept / School</th>
+              <th class="py-3 px-4 text-right">Total Score</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardTbody" class="divide-y divide-slate-800/60">
+            <!-- Dynamic Leaderboard Rows Injected Here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: HTML5 CANVAS CERTIFICATE GENERATOR -->
+  <section id="section-certificate" class="hidden space-y-6">
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl">
+      <div>
+        <h2 class="font-heading text-2xl font-bold text-cspcYellow flex items-center gap-2">
+          <i class="fa-solid fa-award"></i> Official CSPC Certificate of Completion
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Earn at least 50 points to unlock and generate your official downloadable certificate!</p>
+      </div>
+      <button onclick="generateCertificate()" class="bg-cspcYellow hover:bg-cspcYellow-hover text-slate-950 font-extrabold px-5 py-2.5 rounded-xl shadow-lg transition text-xs flex items-center gap-2">
+        <i class="fa-solid fa-download"></i> Download PNG Certificate
+      </button>
+    </div>
+
+    <!-- Canvas Preview Box -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center shadow-2xl">
+      <div class="w-full max-w-3xl overflow-hidden rounded-xl border-2 border-cspcYellow/40 shadow-2xl bg-black">
+        <canvas id="certCanvas" width="1200" height="850" class="w-full h-auto block"></canvas>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="bg-slate-900 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p>&copy; 2026 Camarines Sur Polytechnic Colleges (CSPC) • Multi-Disciplinary Tech Hub</p>
+    <p class="text-slate-400">Open to BS ECE, IT, CS, Engineering, SHS, and All Tech Visitors</p>
+  </div>
+</footer>
+
+<!-- Toast Notifications -->
+<div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 border border-cspcYellow text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs">
+  <i id="toastIcon" class="fa-solid fa-circle-check text-cspcYellow text-lg"></i>
+  <span id="toastMsg">Action completed successfully!</span>
+</div>
+
+<script>
+// APP STATE & STORAGE KEYS
+const STORAGE_KEY_USER = 'CSPC_HUB_USER_DATA_V2';
+const STORAGE_KEY_FACTS = 'CSPC_HUB_FACTS_PROGRESS_V2';
+const FIREBASE_DB_URL = "https://cspc-tech-hub-default-rtdb.firebaseio.com"; // Fallback JSONBin node fallback
+
+let currentUser = {
+  name: "Guest Student",
+  email: "guest@cspc.edu.ph",
+  course: "BS ECE",
+  avatar: "",
+  points: 0
+};
+
+let learnedFactIds = [];
+let activeGameId = null;
+let activeGameData = null;
+let audioContext = null;
+let isAudioPlaying = false;
+let audioOscillator = null;
+
+const FACTS_DATABASE = [
+  { id: 1, cat: "Electronics", title: "Electron Mobility", desc: "Gallium Arsenide (GaAs) has electron mobility 6 times higher than Silicon, making it ideal for high-frequency RF devices." },
+  { id: 2, cat: "Telecom", title: "Shannon-Hartley Theorem", desc: "Defines maximum theoretical data rate of a channel: C = B * log2(1 + SNR), fundamental to 5G and Wi-Fi." },
+  { id: 3, cat: "Computing", title: "Moore's Law", desc: "Observation by Gordon Moore stating transistor counts on microchips double roughly every two years." },
+  { id: 4, cat: "Robotics", title: "PID Controllers", desc: "Proportional-Integral-Derivative control loops are used in 95% of industrial automation and drone flight controllers." },
+  { id: 5, cat: "Electronics", title: "PN Junction Barrier", desc: "Silicon diodes require approximately 0.7V forward bias voltage, while Germanium diodes require only 0.3V." },
+  { id: 6, cat: "Telecom", title: "Optical Fiber Total Internal Reflection", desc: "Light pulses travel through glass fiber cores without escaping due to higher refractive index in the core than cladding." },
+  { id: 7, cat: "Computing", title: "Floating Point IEEE 754", desc: "Standard format representation for real numbers in computers using sign, exponent, and mantissa bits." },
+  { id: 8, cat: "Electronics", title: "MOSFET Gate Insulation", desc: "Metal-Oxide-Semiconductor Field-Effect Transistors use ultrathin Silicon Dioxide (SiO2) as an insulating gate barrier." },
+  { id: 9, cat: "Robotics", title: "Pulse Width Modulation (PWM)", desc: "Drives DC motors and LEDs by rapidly switching power on and off to vary effective duty cycle percentage." },
+  { id: 10, cat: "Telecom", title: "Fresnel Zone Clearance", desc: "Ellipsoidal region between transmitter and receiver antenna requiring 60%+ obstruction clearance for clear microwave links." },
+  { id: 11, cat: "Computing", title: "Von Neumann Architecture", desc: "Computer design using a single memory bus for both instruction data and program memory." },
+  { id: 12, cat: "Electronics", title: "Zener Diode Breakdown", desc: "Designed to operate safely in reverse breakdown mode to provide stable reference voltages in regulator circuits." },
+  { id: 13, cat: "Telecom", title: "Nyquist Sampling Rate", desc: "To accurately reconstruct an analog signal without aliasing, sample frequency must be at least twice max signal frequency (fs >= 2fmax)." },
+  { id: 14, cat: "Robotics", title: "Inverse Kinematics", desc: "Mathematical process of calculating required joint angles of a robotic arm to reach a target 3D spatial coordinate." },
+  { id: 15, cat: "Electronics", title: "SMD vs DIP Components", desc: "Surface Mount Devices (SMD) reduce PCB footprint size by up to 70% compared to traditional Dual In-line Package (DIP) components." },
+  { id: 16, cat: "Computing", title: "RISC vs CISC Processors", desc: "Reduced Instruction Set Computers (ARM) execute simple cycles faster, whereas CISC (x86) handle complex multi-step instructions." },
+  { id: 17, cat: "Telecom", title: "Cellular Frequency Reuse", desc: "Mobile networks reuse identical frequency bands in non-adjacent geographic hexagonal cells to maximize capacity." },
+  { id: 18, cat: "Electronics", title: "Capacitance Energy Storage", desc: "Energy stored in an electric field of a capacitor is calculated using E = 0.5 * C * V^2." },
+  { id: 19, cat: "Robotics", title: "LIDAR Distance Sensing", desc: "Light Detection and Ranging uses pulsed laser beams to calculate distance based on time-of-flight reflections." },
+  { id: 20, cat: "Computing", title: "Turing Completeness", desc: "A computational system is Turing Complete if it can simulate any single-tapped Turing machine regardless of speed." },
+  { id: 21, cat: "Electronics", title: "Op-Amp Golden Rules", desc: "An ideal operational amplifier draws zero input current (I=0) and maintains zero voltage differential across inputs in closed feedback." },
+  { id: 22, cat: "Telecom", title: "Decibel (dB) Power Scale", desc: "3 dB increase represents a doubling of electrical power, while 10 dB increase represents a tenfold power increase." },
+  { id: 23, cat: "Computing", title: "Little Endian Byte Order", desc: "Stores the least significant byte at the lowest memory address (standard in modern x86 and ARM processors)." },
+  { id: 24, cat: "Electronics", title: "Inductive Reactance Formula", desc: "Opposition to AC current in inductors increases proportionally with frequency: XL = 2 * π * f * L." },
+  { id: 25, cat: "Robotics", title: "IMU Gyroscope & Accelerometer", desc: "Inertial Measurement Units combine 3-axis accelerometers and gyroscopes for drone pitch, roll, and yaw orientation." },
+  { id: 26, cat: "Telecom", title: "QAM Modulation", desc: "Quadrature Amplitude Modulation alters both carrier amplitude and phase to pack multiple bits per symbol." },
+  { id: 27, cat: "Computing", title: "DMA Direct Memory Access", desc: "Allows hardware devices to transfer data directly to RAM without burdening CPU processing cycles." },
+  { id: 28, cat: "Electronics", title: "Resistor Color Codes", desc: "Standard 4-band scheme: Black (0), Brown (1), Red (2), Orange (3), Yellow (4), Green (5), Blue (6), Violet (7), Grey (8), White (9)." },
+  { id: 99, cat: "Electronics", title: "Schottky Diode Speed", desc: "Uses metal-semiconductor junction instead of PN junction, delivering extremely fast switching speeds and ultra-low forward drop." },
+  { id: 30, cat: "Telecom", title: "Geostationary Orbit (GEO)", desc: "Satellites orbit 35,786 km above equator matching Earth rotation, remaining fixed relative to ground dish antennas." },
+  { id: 31, cat: "Computing", title: "SRAM vs DRAM", desc: "Static RAM uses flip-flops for superfast cache speed; Dynamic RAM uses tiny capacitors requiring continuous refresh cycles." },
+  { id: 32, cat: "Robotics", title: "Stepper Motor Steps", desc: "Brushless DC motors that divide full rotations into equal steps (typically 1.8° per step or 200 steps/rev) for precise CNC positioning." },
+  { id: 33, cat: "Electronics", title: "555 Timer IC Modes", desc: "Can operate in Monostable (one-shot pulse), Astable (free-running clock square wave), or Bistable (flip-flop) configurations." },
+  { id: 34, cat: "Telecom", title: "Skin Effect in Conductors", desc: "At high RF frequencies, alternating current concentrates primarily near the outer conductor surface, increasing resistance." },
+  { id: 35, cat: "Computing", title: "GPU Parallel Processing", desc: "GPUs feature thousands of smaller cores designed to process matrix/tensor mathematical calculations simultaneously." },
+  { id: 36, cat: "Robotics", title: "CAN Bus Protocol", desc: "Controller Area Network is a robust differential vehicle bus standard allowing microcontrollers to communicate without host PCs." },
+  { id: 37, cat: "Electronics", title: "Transformer Turns Ratio", desc: "Voltage ratio equals secondary turns divided by primary turns: Vp/Vs = Np/Ns." },
+  { id: 38, cat: "Telecom", title: "Electromagnetic Spectrum", desc: "Radio waves possess the longest wavelengths and lowest energy, while Gamma rays have shortest wavelengths and highest energy." },
+  { id: 39, cat: "Computing", title: "Solid State Drive NAND Flash", desc: "Non-volatile storage traps electrical charge in floating-gate or charge-trap memory cells to retain data without power." },
+  { id: 40, cat: "Electronics", title: "LC Circuit Resonance", desc: "Resonant frequency occurs when capacitive reactance equals inductive reactance: fr = 1 / (2 * π * sqrt(L * C))." },
+  { id: 41, cat: "Robotics", title: "H-Bridge Motor Driver", desc: "Electronic circuit switching 4 switches to reverse current direction through a DC motor for forward/backward rotation." },
+  { id: 42, cat: "Telecom", title: "Waveguide Transmission", desc: "Hollow metal pipes used to guide high-power microwave signals with lower attenuation loss than coaxial cables." },
+  { id: 43, cat: "Computing", title: "Quantum Qubits", desc: "Unlike classical bits (0 or 1), quantum bits leverage superposition to exist in states combining 0 and 1 simultaneously." },
+  { id: 44, cat: "Electronics", title: "Superconductivity Threshold", desc: "Certain materials lose all electrical resistance and expel magnetic flux below critical transition temperatures." },
+  { id: 45, cat: "Telecom", title: "Smith Chart Tool", desc: "Polar graphical chart used by RF engineers to solve complex impedance matching and transmission line problems." },
+  { id: 46, cat: "Robotics", title: "ROS (Robot Operating System)", desc: "Open-source middleware framework providing hardware abstraction, device drivers, and message passing between robot nodes." },
+  { id: 47, cat: "Computing", title: "Error Correcting Code (ECC) RAM", desc: "Detects and corrects single-bit memory corruption errors using parity check bits in mission-critical servers." },
+  { id: 48, cat: "Electronics", title: "Thermal Noise (Johnson Noise)", desc: "Electronic noise generated by thermal agitation of charge carriers inside electrical conductors regardless of voltage." },
+  { id: 49, cat: "Telecom", title: "Fiber Optic WDM Multiplexing", desc: "Wavelength Division Multiplexing transmits multiple optical carrier signals on a single fiber using different laser light colors." },
+  { id: 50, cat: "Computing", title: "FPGA Programmable Logic", desc: "Field Programmable Gate Arrays contain reconfigurable logic blocks connected via programmable interconnects." },
+  { id: 51, cat: "Robotics", title: "Encoder Feedback Systems", desc: "Optical or magnetic rotary encoders provide real-time velocity and angular position feedback to closed-loop servos." },
+  { id: 52, cat: "Electronics", title: "Kirchhoff's Current Law (KCL)", desc: "Total electrical current entering a junction or node equals total current leaving that same node (Conservation of Charge)." }
+];
+
+// ON PAGE LOAD INIT
+window.onload = function() {
+  loadProfileFromStorage();
+  loadFactsProgress();
+  renderFactsGrid();
+  renderLeaderboard();
+  initAntiCheatListener();
+  drawDefaultCertificateCanvas();
+};
+
+// PROFILE & AVATAR HANDLING
+function loadProfileFromStorage() {
+  const saved = localStorage.getItem(STORAGE_KEY_USER);
+  if (saved) {
+    try {
+      currentUser = JSON.parse(saved);
+      updateNavProfileUI();
+    } catch(e) { console.error(e); }
+  } else {
+    // Default avatar SVG
+    currentUser.avatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%233b82f6'/><path d='M30 40 Q50 20 70 40 Q50 60 30 40' fill='%23fbbf24'/><circle cx='50' cy='40' r='10' fill='%23ffffff'/><circle cx='50' cy='40' r='5' fill='%230f172a'/></svg>";
+    openOnboardingModal();
+  }
+}
+
+function updateNavProfileUI() {
+  document.getElementById('navUserName').textContent = currentUser.name || "Student";
+  document.getElementById('navUserPoints').textContent = `+${currentUser.points || 0} PTS`;
+  document.getElementById('navAvatarImg').src = currentUser.avatar;
+  
+  // Update onboarding form fields
+  document.getElementById('inputName').value = currentUser.name || '';
+  document.getElementById('inputEmail').value = currentUser.email || '';
+  document.getElementById('inputCourse').value = currentUser.course || '';
+}
+
+function openOnboardingModal() {
+  document.getElementById('onboardingModal').classList.remove('hidden');
+}
+
+function closeOnboardingModal() {
+  document.getElementById('onboardingModal').classList.add('hidden');
+}
+
+function saveProfile(e) {
+  e.preventDefault();
+  currentUser.name = document.getElementById('inputName').value.trim();
+  currentUser.email = document.getElementById('inputEmail').value.trim();
+  currentUser.course = document.getElementById('inputCourse').value.trim();
+  
+  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(currentUser));
+  updateNavProfileUI();
+  syncScoreToCloud();
+  closeOnboardingModal();
+  showToast("Profile updated successfully!");
+}
+
+function setAvatarMode(mode) {
+  document.getElementById('avatarPresetsSection').classList.toggle('hidden', mode !== 'preset');
+  document.getElementById('avatarUploadSection').classList.toggle('hidden', mode !== 'upload');
+  document.getElementById('avatarCameraSection').classList.toggle('hidden', mode !== 'camera');
+  
+  document.getElementById('btnAvatarPreset').className = mode === 'preset' ? "py-2 text-xs font-bold rounded-xl border border-cspcYellow bg-slate-800 text-cspcYellow" : "py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-400";
+  document.getElementById('btnAvatarUpload').className = mode === 'upload' ? "py-2 text-xs font-bold rounded-xl border border-cspcYellow bg-slate-800 text-cspcYellow" : "py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-400";
+  document.getElementById('btnAvatarCam').className = mode === 'camera' ? "py-2 text-xs font-bold rounded-xl border border-cspcYellow bg-slate-800 text-cspcYellow" : "py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-400";
+
+  if (mode === 'camera') {
+    startWebcam();
+  }
+}
+
+function selectPresetAvatar(src) {
+  currentUser.avatar = src;
+  showToast("Avatar preset selected!");
+}
+
+function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      currentUser.avatar = evt.target.result;
+      showToast("Custom photo uploaded!");
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function startWebcam() {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      const video = document.getElementById('webcamVideo');
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      showToast("Unable to access camera.");
+    });
+}
+
+function captureWebcam() {
+  const video = document.getElementById('webcamVideo');
+  const canvas = document.createElement('canvas');
+  canvas.width = 150;
+  canvas.height = 150;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, 150, 150);
+  currentUser.avatar = canvas.toDataURL('image/png');
+  showToast("Webcam photo snapped!");
+}
+
+function loadFactsProgress() {
+  const saved = localStorage.getItem(STORAGE_KEY_FACTS);
+  if (saved) {
+    try { learnedFactIds = JSON.parse(saved); } catch(e){}
+  }
+}
+
+function renderFactsGrid() {
+  const container = document.getElementById('factsGrid');
+  const query = document.getElementById('factSearchInput').value.toLowerCase();
+  const category = document.getElementById('factCategoryFilter').value;
+
+  container.innerHTML = '';
+
+  FACTS_DATABASE.forEach(fact => {
+    const matchesSearch = fact.title.toLowerCase().includes(query) || fact.desc.toLowerCase().includes(query);
+    const matchesCat = category === 'ALL' || fact.cat === category;
+
+    if (matchesSearch && matchesCat) {
+      const isLearned = learnedFactIds.includes(fact.id);
+      const card = document.createElement('div');
+      card.className = `bg-slate-900 border ${isLearned ? 'border-emerald-500/50 bg-emerald-950/10' : 'border-slate-800'} rounded-2xl p-5 flex flex-col justify-between shadow-lg hover:border-cspcYellow/40 transition`;
+      
+      card.innerHTML = `
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-cspcYellow bg-cspcYellow/10 px-2.5 py-1 rounded-full border border-cspcYellow/20">Fact #${fact.id} • ${fact.cat}</span>
+            ${isLearned ? '<span class="text-xs text-emerald-400 font-bold flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Learned</span>' : ''}
+          </div>
+          <h3 class="font-bold text-slate-100 text-sm mb-2">${fact.title}</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">${fact.desc}</p>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center">
+          <button onclick="toggleLearnFact(${fact.id})" class="w-full text-xs py-2 px-3 rounded-xl font-bold transition flex items-center justify-center gap-2 ${isLearned ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-cspcYellow text-slate-950 hover:bg-cspcYellow-hover'}">
+            <i class="fa-solid ${isLearned ? 'fa-rotate-left' : 'fa-check'}"></i>
+            ${isLearned ? 'Mark as Unlearned' : 'Mark as Learned (+10 Pts)'}
+          </button>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+  });
+}
+
+function filterFacts() {
+  renderFactsGrid();
+}
+
+function toggleLearnFact(id) {
+  const index = learnedFactIds.indexOf(id);
+  if (index === -1) {
+    learnedFactIds.push(id);
+    addPoints(10);
+    showToast("+10 Points earned! Fact learned.");
+  } else {
+    learnedFactIds.splice(index, 1);
+    addPoints(-10);
+    showToast("Fact unlearned.");
+  }
+  localStorage.setItem(STORAGE_KEY_FACTS, JSON.stringify(learnedFactIds));
+  renderFactsGrid();
+}
+
+function initAntiCheatListener() {
+  window.addEventListener('blur', () => {
+    if (activeGameId !== null) {
+      // User switched tab or left window during active game
+      addPoints(-20);
+      showToast("Anti-Cheat Triggered! -20 Pts deducted for tab switch.");
+      
+      const status = document.getElementById('gameAntiCheatStatus');
+      if (status) {
+        status.classList.remove('hidden');
+        document.getElementById('gameAntiCheatMsg').innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> Anti-Cheat Triggered! Tab switch detected (-20 Pts). Question randomized!`;
+      }
+      // Re-randomize current game question immediately
+      nextGameQuestion();
+    }
+  });
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.className = "tab-btn px-4 py-2 rounded-lg transition text-slate-400 hover:text-slate-200 flex items-center gap-2";
+  });
+
+  document.getElementById(`section-${tabName}`).classList.remove('hidden');
+  const activeBtn = document.getElementById(`tab-${tabName}`);
+  if (activeBtn) {
+    activeBtn.className = "tab-btn px-4 py-2 rounded-lg transition text-cspcYellow bg-slate-800 flex items-center gap-2 font-bold";
+  }
+
+  if (tabName === 'leaderboard') renderLeaderboard();
+  if (tabName === 'certificate') drawDefaultCertificateCanvas();
+}
+
+function addPoints(pts) {
+  currentUser.points = Math.max(0, (currentUser.points || 0) + pts);
+  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(currentUser));
+  updateNavProfileUI();
+  syncScoreToCloud();
+}
+
+function launchGame(gameId) {
+  activeGameId = gameId;
+  document.getElementById('gameAntiCheatStatus').classList.add('hidden');
+  document.getElementById('gameModal').classList.remove('hidden');
+  nextGameQuestion();
+}
+
+function closeGameModal() {
+  activeGameId = null;
+  activeGameData = null;
+  document.getElementById('gameModal').classList.add('hidden');
+}
+
+function nextGameQuestion() {
+  if (!activeGameId) return;
+  const stage = document.getElementById('gameStage');
+  const title = document.getElementById('activeGameTitle');
+  document.getElementById('gameFeedback').textContent = "Select or calculate your answer:";
+
+  switch (activeGameId) {
+    case 1:
+      title.textContent = "1. Resistor Color Decoder";
+      renderGame1(stage);
+      break;
+    case 2:
+      title.textContent = "2. Schematic Symbol Matcher";
+      renderGame2(stage);
+      break;
+    case 3:
+      title.textContent = "3. Ohm's Law Multimeter Sprint";
+      renderGame3(stage);
+      break;
+    case 4:
+      title.textContent = "4. Logic Gate Truth Table Simulator";
+      renderGame4(stage);
+      break;
+    case 5:
+      title.textContent = "5. PCB Component Finder";
+      renderGame5(stage);
+      break;
+    case 6:
+      title.textContent = "6. Ethernet T568B Pinout Arranger";
+      renderGame6(stage);
+      break;
+    case 7:
+      title.textContent = "7. Binary to Decimal Bit Switcher";
+      renderGame7(stage);
+      break;
+    case 8:
+      title.textContent = "8. Oscilloscope Wave Period Analyzer";
+      renderGame8(stage);
+      break;
+    case 9:
+      title.textContent = "9. AC Phase Shift - ELI the ICE Man";
+      renderGame9(stage);
+      break;
+    case 10:
+      title.textContent = "10. Mastermind Speed Quiz";
+      renderGame10(stage);
+      break;
+  }
+}
+
+// GAME 1: Resistor Color Code
+function renderGame1(stage) {
+  const colors = [
+    { name: "Black", val: 0, hex: "#000000" },
+    { name: "Brown", val: 1, hex: "#8B4513" },
+    { name: "Red", val: 2, hex: "#EF4444" },
+    { name: "Orange", val: 3, hex: "#F97316" },
+    { name: "Yellow", val: 4, hex: "#FACC15" },
+    { name: "Green", val: 5, hex: "#22C55E" },
+    { name: "Blue", val: 6, hex: "#3B82F6" },
+    { name: "Violet", val: 7, hex: "#A855F7" }
+  ];
+
+  const c1 = colors[Math.floor(Math.random() * (colors.length - 1)) + 1];
+  const c2 = colors[Math.floor(Math.random() * colors.length)];
+  const mult = Math.pow(10, Math.floor(Math.random() * 3));
+  
+  const correctVal = (c1.val * 10 + c2.val) * mult;
+  activeGameData = { correctVal };
+
+  // Generate options
+  const options = [correctVal, correctVal + 100, Math.max(10, correctVal - 50), correctVal * 2]
+    .sort(() => Math.random() - 0.5);
+
+  stage.innerHTML = `
+    <div class="text-center w-full max-w-md">
+      <p class="text-xs text-slate-300 mb-4">Determine the resistance value based on the 4-band SVG resistor below:</p>
+      
+      <!-- Resistor SVG -->
+      <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex justify-center mb-6">
+        <svg width="220" height="70" viewBox="0 0 220 70">
+          <rect x="0" y="30" width="220" height="10" fill="#94a3b8"/>
+          <rect x="40" y="15" width="140" height="40" rx="10" fill="#d97706"/>
+          <rect x="65" y="15" width="12" height="40" fill="${c1.hex}"/>
+          <rect x="95" y="15" width="12" height="40" fill="${c2.hex}"/>
+          <rect x="125" y="15" width="12" height="40" fill="${mult === 1 ? '#000000' : mult === 10 ? '#8B4513' : '#EF4444'}"/>
+          <rect x="155" y="15" width="12" height="40" fill="#fbbf24"/>
+        </svg>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        ${options.map(opt => `
+          <button onclick="checkGame1Answer(${opt})" class="bg-slate-800 hover:bg-cspcBlue border border-slate-700 text-slate-100 font-bold py-3 rounded-xl text-sm transition">
+            ${opt} &Omega;
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function checkGame1Answer(ans) {
+  if (ans === activeGameData.correctVal) {
+    addPoints(15);
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Correct! +15 Pts</span>`;
+  } else {
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> Wrong! Answer was ${activeGameData.correctVal} &Omega;</span>`;
+  }
+  setTimeout(nextGameQuestion, 1200);
+}
+
+// GAME 2: Schematic Symbol Matcher
+function renderGame2(stage) {
+  const symbols = [
+    { name: "Diode", icon: "fa-right-long" },
+    { name: "Capacitor", icon: "fa-pause" },
+    { name: "Ground", icon: "fa-turn-down" },
+    { name: "Resistor", icon: "fa-wave-square" },
+    { name: "Inductor", icon: "fa-circle-nodes" }
+  ];
+
+  const target = symbols[Math.floor(Math.random() * symbols.length)];
+  activeGameData = { target };
+
+  const options = symbols.map(s => s.name).sort(() => Math.random() - 0.5);
+
+  stage.innerHTML = `
+    <div class="text-center w-full max-w-md">
+      <p class="text-xs text-slate-300 mb-4">Identify the correct electrical schematic symbol component:</p>
+      <div class="bg-slate-900 border border-slate-700 p-8 rounded-2xl mb-6 inline-block">
+        <i class="fa-solid ${target.icon} text-5xl text-cspcYellow"></i>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        ${options.map(opt => `
+          <button onclick="checkGame2Answer('${opt}')" class="bg-slate-800 hover:bg-cspcBlue border border-slate-700 text-slate-100 font-bold py-3 rounded-xl text-sm transition">
+            ${opt}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function checkGame2Answer(ans) {
+  if (ans === activeGameData.target.name) {
+    addPoints(15);
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Correct! +15 Pts</span>`;
+  } else {
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> Incorrect! It was ${activeGameData.target.name}.</span>`;
+  }
+  setTimeout(nextGameQuestion, 1200);
+}
+
+// GAME 3: Ohm's Law Multimeter
+function renderGame3(stage) {
+  const I = Math.floor(Math.random() * 5) + 1; // Current in A
+  const R = Math.floor(Math.random() * 10) + 2; // Resistance in Ohms
+  const V = I * R; // Voltage in V
+
+  const missing = Math.random() > 0.5 ? 'V' : 'I';
+  activeGameData = { V, I, R, missing };
+
+  stage.innerHTML = `
+    <div class="text-center w-full max-w-md">
+      <p class="text-xs text-slate-300 mb-3">Calculate the missing variable using Ohm's Law (V = I x R):</p>
+      
+      <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-4 flex justify-around items-center">
+        <div class="text-center">
+          <div class="text-[10px] text-slate-400 uppercase">Voltage (V)</div>
+          <div class="text-lg font-bold ${missing === 'V' ? 'text-cspcYellow animate-pulse' : 'text-slate-100'}">${missing === 'V' ? '?' : V + ' V'}</div>
+        </div>
+        <div class="text-center">
+          <div class="text-[10px] text-slate-400 uppercase">Current (I)</div>
+          <div class="text-lg font-bold ${missing === 'I' ? 'text-cspcYellow animate-pulse' : 'text-slate-100'}">${missing === 'I' ? '?' : I + ' A'}</div>
+        </div>
+        <div class="text-center">
+          <div class="text-[10px] text-slate-400 uppercase">Resistance (R)</div>
+          <div class="text-lg font-bold text-slate-100">${R} &Omega;</div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 mb-2">
+        <input type="number" id="game3Input" placeholder="Enter value..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-center text-slate-100 text-sm focus:outline-none focus:border-cspcYellow">
+        <button onclick="checkGame3Answer()" class="bg-cspcYellow text-slate-950 font-bold px-5 rounded-xl text-xs">Submit</button>
+      </div>
+    </div>
+  `;
+}
+
+function checkGame3Answer() {
+  const val = parseFloat(document.getElementById('game3Input').value);
+  const correct = activeGameData.missing === 'V' ? activeGameData.V : activeGameData.I;
+
+  if (val === correct) {
+    addPoints(15);
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Correct! +15 Pts</span>`;
+  } else {
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> Incorrect! Correct answer was ${correct}.</span>`;
+  }
+  setTimeout(nextGameQuestion, 1200);
+}
+
+// GAME 4: Logic Gate Truth Table Simulator
+function renderGame4(stage) {
+  const gates = ["AND", "OR", "XOR", "NAND", "NOR"];
+  const gate = gates[Math.floor(Math.random() * gates.length)];
+  
+  activeGameData = { gate, inputA: 0, inputB: 0 };
+
+  stage.innerHTML = `
+    <div class="text-center w-full max-w-md">
+      <p class="text-xs text-slate-300 mb-3">Configure inputs A and B to turn ON (1) the output LED for gate: <strong class="text-cspcYellow text-sm">${gate}</strong></p>
+      
+      <div class="bg-slate-900 border border-slate-700 p-6 rounded-2xl mb-4 flex items-center justify-between">
+        <div class="space-y-2">
+          <button onclick="toggleGateInput('A')" id="gateBtnA" class="block bg-slate-800 border border-slate-600 px-4 py-2 rounded-xl text-xs font-bold text-slate-300">Input A: 0</button>
+          <button onclick="toggleGateInput('B')" id="gateBtnB" class="block bg-slate-800 border border-slate-600 px-4 py-2 rounded-xl text-xs font-bold text-slate-300">Input B: 0</button>
+        </div>
+
+        <div class="text-center font-bold text-slate-400 text-sm bg-slate-800 px-3 py-1 rounded-lg">
+          ${gate}
+        </div>
+
+        <div class="text-center">
+          <div id="gateLed" class="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-600 mx-auto mb-1 flex items-center justify-center">
+            <i class="fa-solid fa-lightbulb text-slate-600"></i>
+          </div>
+          <span id="gateOutputText" class="text-[10px] font-bold text-slate-400">OUT: 0</span>
+        </div>
+      </div>
+
+      <button onclick="checkGame4Answer()" class="w-full bg-cspcYellow text-slate-950 font-bold py-3 rounded-xl text-xs">Verify Gate Output</button>
+    </div>
+  `;
+}
+
+function toggleGateInput(pin) {
+  if (pin === 'A') {
+    activeGameData.inputA = activeGameData.inputA === 0 ? 1 : 0;
+    document.getElementById('gateBtnA').textContent = `Input A: ${activeGameData.inputA}`;
+    document.getElementById('gateBtnA').className = activeGameData.inputA ? "block bg-blue-600 border border-blue-400 px-4 py-2 rounded-xl text-xs font-bold text-white" : "block bg-slate-800 border border-slate-600 px-4 py-2 rounded-xl text-xs font-bold text-slate-300";
+  } else {
+    activeGameData.inputB = activeGameData.inputB === 0 ? 1 : 0;
+    document.getElementById('gateBtnB').textContent = `Input B: ${activeGameData.inputB}`;
+    document.getElementById('gateBtnB').className = activeGameData.inputB ? "block bg-blue-600 border border-blue-400 px-4 py-2 rounded-xl text-xs font-bold text-white" : "block bg-slate-800 border border-slate-600 px-4 py-2 rounded-xl text-xs font-bold text-slate-300";
+  }
+
+  // Calculate live LED output
+  const A = activeGameData.inputA;
+  const B = activeGameData.inputB;
+  let out = 0;
+  if (activeGameData.gate === "AND") out = (A && B) ? 1 : 0;
+  if (activeGameData.gate === "OR") out = (A || B) ? 1 : 0;
+  if (activeGameData.gate === "XOR") out = (A !== B) ? 1 : 0;
+  if (activeGameData.gate === "NAND") out = !(A && B) ? 1 : 0;
+  if (activeGameData.gate === "NOR") out = !(A || B) ? 1 : 0;
+
+  const led = document.getElementById('gateLed');
+  const txt = document.getElementById('gateOutputText');
+  if (out === 1) {
+    led.className = "w-10 h-10 rounded-full bg-emerald-500 border-2 border-emerald-300 shadow-lg shadow-emerald-500/50 mx-auto mb-1 flex items-center justify-center";
+    txt.textContent = "OUT: 1 (ON)";
+    txt.className = "text-[10px] font-bold text-emerald-400";
+  } else {
+    led.className = "w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-600 mx-auto mb-1 flex items-center justify-center";
+    txt.textContent = "OUT: 0 (OFF)";
+    txt.className = "text-[10px] font-bold text-slate-400";
+  }
+}
+
+function checkGame4Answer() {
+  const A = activeGameData.inputA;
+  const B = activeGameData.inputB;
+  let out = 0;
+  if (activeGameData.gate === "AND") out = (A && B) ? 1 : 0;
+  if (activeGameData.gate === "OR") out = (A || B) ? 1 : 0;
+  if (activeGameData.gate === "XOR") out = (A !== B) ? 1 : 0;
+  if (activeGameData.gate === "NAND") out = !(A && B) ? 1 : 0;
+  if (activeGameData.gate === "NOR") out = !(A || B) ? 1 : 0;
+
+  if (out === 1) {
+    addPoints(15);
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Great job! Gate output enabled (+15 Pts)</span>`;
+  } else {
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> Output is still 0! Try again.</span>`;
+  }
+  setTimeout(nextGameQuestion, 1200);
+}
+
+// GAME 5: PCB Component Finder
+function renderGame5(stage) {
+  const components = [
+    { name: "SMD Capacitor", desc: "Small rectangular surface mount chip" },
+    { name: "DIP Microcontroller IC", desc: "Dual In-Line dual pinned chip" },
+    { name: "Crystal Oscillator", desc: "Silver metallic frequency timing component" },
+    { name: "Electrolytic Capacitor", desc: "Cylindrical polarized storage can" }
+  ];
+
+  const target = components[Math.floor(Math.random() * components.length)];
+  activeGameData = { target };
+
+  const options = components.map(c => c.name).sort(() => Math.random() - 0.5);
+
+  stage.innerHTML = `
+    <div class="text-center w-full max-w-md">
+      <p class="text-xs text-slate-300 mb-3">Which PCB component matches this description?</p>
+      <div class="bg-slate-900 border border-slate-700 p-6 rounded-2xl mb-6">
+        <p class="text-sm font-bold text-cspcYellow">"${target.desc}"</p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-2">
+        ${options.map(opt => `
+          <button onclick="checkGame5Answer('${opt}')" class="bg-slate-800 hover:bg-cspcBlue border border-slate-700 text-slate-100 font-bold py-3 rounded-xl text-xs transition">
+            ${opt}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function checkGame5Answer(ans) {
+  if (ans === activeGameData.target.name) {
+    addPoints(15);
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Correct component identified! (+15 Pts)</span>`;
+  } else {
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> Wrong! It was ${activeGameData.target.name}.</span>`;
+  }
+  setTimeout(nextGameQuestion, 1200);
+}
+
+// GAME 6: Ethernet T568B Cable Pinout Arranger
+function renderGame6(stage) {
+  const correctOrder = [
+    "White-Orange", "Orange", "White-Green", "Blue", 
+    "White-Blue", "Green", "White-Brown", "Brown"
+  ];
+  
+  // Shuffled wires
+  const currentWires = [...correctOrder].sort(() => Math.random() - 0.5);
+  activeGameData = { correctOrder, currentWires };
+
+  stage.innerHTML = `
+    <div class="text-center w-full max-w-md">
+      <p class="text-xs text-slate-300 mb-3">Select the correct 1st wire color in the T568B Ethernet standard:</p>
+
+      <div class="grid grid-cols-2 gap-2 mb-4">
+        ${currentWires.map(w => `
+          <button onclick="checkGame6Answer('${w}')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs">
+            ${w}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function checkGame6Answer(ans) {
+  if (ans === activeGameData.correctOrder[0]) {
+    addPoints(15);
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Correct! Pin 1 is White-Orange. (+15 Pts)</span>`;
+  } else {
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> Incorrect! Pin 1 is White-Orange.</span>`;
+  }
+  setTimeout(nextGameQuestion, 1200);
+}
+
+// GAME 7: Binary Bit Switcher
+function renderGame7(stage) {
+  const targetDec = Math.floor(Math.random() * 255) + 1;
+  activeGameData = { targetDec, bits: [0,0,0,0,0,0,0,0] };
+
+  stage.innerHTML = `
+    <div class="text-center w-full max-w-md">
+      <p class="text-xs text-slate-300 mb-2">Toggle the 8 binary switches to match the target decimal value:</p>
+      <div class="text-2xl font-bold text-cspcYellow mb-4">Target: ${targetDec}</div>
+
+      <div class="flex justify-center gap-1.5 mb-6">
+        ${[128,64,32,16,8,4,2,1].map((weight, idx) => `
+          <div class="text-center">
+            <button onclick="toggleBit(${idx})" id="bitBtn_${idx}" class="w-9 h-12 bg-slate-800 border border-slate-700 rounded-lg text-sm font-bold text-slate-400">0</button>
+            <div class="text-[9px] text-slate-500 mt-1">${weight}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="text-xs text-slate-300 mb-4">Current Total: <span id="currentBitTotal" class="font-bold text-white">0</span></div>
+      <button onclick="checkGame7Answer()" class="w-full bg-cspcYellow text-slate-950 font-bold py-3 rounded-xl text-xs">Submit Binary Value</button>
+    </div>
+  `;
+}
+
+function toggleBit(idx) {
+  activeGameData.bits[idx] = activeGameData.bits[idx] === 0 ? 1 : 0;
+  const btn = document.getElementById(`bitBtn_${idx}`);
+  btn.textContent = activeGameData.bits[idx];
+  btn.className = activeGameData.bits[idx] ? "w-9 h-12 bg-cspcYellow border border-yellow-300 rounded-lg text-sm font-extrabold text-slate-950 shadow-md" : "w-9 h-12 bg-slate-800 border border-slate-700 rounded-lg text-sm font-bold text-slate-400";
+
+  const weights = [128,64,32,16,8,4,2,1];
+  const total = activeGameData.bits.reduce((acc, bit, i) => acc + (bit * weights[i]), 0);
+  document.getElementById('currentBitTotal').textContent = total;
+}
+
+function checkGame7Answer() {
+  const weights = [128,64,32,16,8,4,2,1];
+  const total = activeGameData.bits.reduce((acc, bit, i) => acc + (bit * weights[i]), 0);
+
+  if (total === activeGameData.targetDec) {
+    addPoints(15);
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Binary matched! (+15 Pts)</span>`;
+  } else {
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> Value was ${total}, target was ${activeGameData.targetDec}.</span>`;
+  }
+  setTimeout(nextGameQuestion, 1200);
+}
+
+// GAME 8: Oscilloscope Wave Analyzer
+function renderGame8(stage) {
+  const periodMs = [1, 2, 5, 10][Math.floor(Math.random() * 4)];
+  const freqHz = 1000 / periodMs;
+  activeGameData = { freqHz };
+
+  stage.innerHTML = `
+    <div class="text-center w-full max-w-md">
+      <p class="text-xs text-slate-300 mb-2">Calculate the wave frequency given signal period <strong>T = ${periodMs} ms</strong> (f = 1 / T):</p>
+      
+      <div class="bg-black border border-emerald-500/40 p-2 rounded-xl mb-4">
+        <canvas id="oscCanvas" width="300" height="100" class="w-full h-auto block"></canvas>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        ${[freqHz, freqHz * 2, freqHz / 2, freqHz + 50].sort(() => Math.random() - 0.5).map(f => `
+          <button onclick="checkGame8Answer(${f})" class="bg-slate-800 hover:bg-cspcBlue border border-slate-700 text-slate-100 font-bold py-3 rounded-xl text-xs transition">
+            ${f} Hz
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  // Draw animated canvas sine wave
+  const canvas = document.getElementById('oscCanvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let offset = 0;
+    function drawWave() {
+      if (!document.getElementById('oscCanvas')) return;
+      ctx.clearRect(0,0,300,100);
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for(let x = 0; x < 300; x++) {
+        const y = 50 + Math.sin((x + offset) * 0.08) * 30;
+        if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+      offset += 2;
+      requestAnimationFrame(drawWave);
+    }
+    drawWave();
+  }
+}
+
+function checkGame8Answer(ans) {
+  if (ans === activeGameData.freqHz) {
+    addPoints(15);
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Correct frequency! (+15 Pts)</span>`;
+  } else {
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> Wrong! Frequency was ${activeGameData.freqHz} Hz.</span>`;
+  }
+  setTimeout(nextGameQuestion, 1200);
+}
+
+// GAME 9: AC Phase Shift - ELI the ICE Man
+function renderGame9(stage) {
+  const questions = [
+    { text: "In a purely Inductive circuit (L), what leads what?", correct: "Voltage leads Current (ELI)" },
+    { text: "In a purely Capacitive circuit (C), what leads what?", correct: "Current leads Voltage (ICE)" }
+  ];
+
+  const q = questions[Math.floor(Math.random() * questions.length)];
+  activeGameData = { q };
+
+  stage.innerHTML = `
+    <div class="text-center w-full max-w-md">
+      <p class="text-xs text-slate-300 mb-4">${q.text}</p>
+      
+      <div class="grid grid-cols-1 gap-3">
+        <button onclick="checkGame9Answer('Voltage leads Current (ELI)')" class="bg-slate-800 hover:bg-cspcBlue border border-slate-700 text-slate-100 font-bold py-3 rounded-xl text-xs">
+          Voltage leads Current (ELI)
+        </button>
+        <button onclick="checkGame9Answer('Current leads Voltage (ICE)')" class="bg-slate-800 hover:bg-cspcBlue border border-slate-700 text-slate-100 font-bold py-3 rounded-xl text-xs">
+          Current leads Voltage (ICE)
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function checkGame9Answer(ans) {
+  if (ans === activeGameData.q.correct) {
+    addPoints(15);
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Correct Phase rule! (+15 Pts)</span>`;
+  } else {
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> Incorrect phase mnemonic!</span>`;
+  }
+  setTimeout(nextGameQuestion, 1200);
+}
+
+// GAME 10: Mastermind Speed Quiz
+function renderGame10(stage) {
+  const quizBank = [
+    { q: "What is the unit of electrical capacitance?", options: ["Farad", "Henry", "Ohm", "Tesla"], a: "Farad" },
+    { q: "Which logic gate outputs 1 only if all inputs are 1?", options: ["AND", "OR", "XOR", "NOR"], a: "AND" },
+    { q: "What protocol is standard for web traffic encryption?", options: ["HTTPS", "FTP", "TELNET", "UDP"], a: "HTTPS" }
+  ];
+
+  const item = quizBank[Math.floor(Math.random() * quizBank.length)];
+  activeGameData = { item };
+
+  stage.innerHTML = `
+    <div class="text-center w-full max-w-md">
+      <p class="text-xs text-slate-300 mb-4">${item.q}</p>
+      <div class="grid grid-cols-2 gap-3">
+        ${item.options.map(opt => `
+          <button onclick="checkGame10Answer('${opt}')" class="bg-slate-800 hover:bg-cspcBlue border border-slate-700 text-slate-100 font-bold py-3 rounded-xl text-xs">
+            ${opt}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function checkGame10Answer(ans) {
+  if (ans === activeGameData.item.a) {
+    addPoints(15);
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Speed Quiz Mastered! (+15 Pts)</span>`;
+  } else {
+    document.getElementById('gameFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-circle-xmark"></i> Incorrect answer!</span>`;
+  }
+  setTimeout(nextGameQuestion, 1200);
+}
+
+function syncScoreToCloud() {
+  // Sync to local mock array for universal persistence
+  let localBoard = JSON.parse(localStorage.getItem('CSPC_LEADERBOARD_MOCK') || '[]');
+  
+  const existingIdx = localBoard.findIndex(item => item.email === currentUser.email);
+  if (existingIdx !== -1) {
+    localBoard[existingIdx] = currentUser;
+  } else {
+    localBoard.push(currentUser);
+  }
+  
+  localStorage.setItem('CSPC_LEADERBOARD_MOCK', JSON.stringify(localBoard));
+}
+
+function renderLeaderboard() {
+  const tbody = document.getElementById('leaderboardTbody');
+  tbody.innerHTML = '';
+
+  let list = JSON.parse(localStorage.getItem('CSPC_LEADERBOARD_MOCK') || '[]');
+  
+  // Ensure default sample data if list is small
+  if (list.length < 3) {
+    list = [
+      { name: "Maria Santos", course: "BS ECE 4A", points: 280, avatar: currentUser.avatar },
+      { name: "John Doe", course: "BS IT 2B", points: 190, avatar: currentUser.avatar },
+      { name: "Alex Rivera", course: "SHS STEM", points: 140, avatar: currentUser.avatar },
+      currentUser
+    ];
+  }
+
+  // Sort descending
+  list.sort((a,b) => (b.points || 0) - (a.points || 0));
+
+  list.forEach((st, idx) => {
+    const tr = document.createElement('tr');
+    tr.className = st.email === currentUser.email ? "bg-cspcBlue/20 font-bold" : "hover:bg-slate-800/40 transition";
+    tr.innerHTML = `
+      <td class="py-3 px-4 flex items-center gap-2">
+        <span class="w-6 h-6 rounded-full ${idx === 0 ? 'bg-amber-400 text-slate-950 font-extrabold' : 'bg-slate-800 text-slate-400'} flex items-center justify-center text-xs">
+          ${idx + 1}
+        </span>
+      </td>
+      <td class="py-3 px-4">
+        <div class="flex items-center gap-2">
+          <img src="${st.avatar || currentUser.avatar}" class="w-6 h-6 rounded-full border border-cspcYellow object-cover">
+          <span>${st.name}</span>
+        </div>
+      </td>
+      <td class="py-3 px-4 text-slate-400 text-xs">${st.course || 'Open Program'}</td>
+      <td class="py-3 px-4 text-right font-extrabold text-cspcYellow">+${st.points || 0} PTS</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function drawDefaultCertificateCanvas() {
+  const canvas = document.getElementById('certCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(0, 0, 1200, 850);
+
+  // Border Frame
+  ctx.strokeStyle = "#fbbf24";
+  ctx.lineWidth = 12;
+  ctx.strokeRect(30, 30, 1140, 790);
+
+  ctx.strokeStyle = "#3b82f6";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(45, 45, 1110, 760);
+
+  // Title Headers
+  ctx.fillStyle = "#fbbf24";
+  ctx.font = "bold 38px Fredoka, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("CAMARINES SUR POLYTECHNIC COLLEGES", 600, 120);
+
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "bold 20px Inter, sans-serif";
+  ctx.fillText("MULTI-DISCIPLINARY TECH & ECE FACTS HUB", 600, 160);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 48px Fredoka, sans-serif";
+  ctx.fillText("CERTIFICATE OF ACHIEVEMENT", 600, 240);
+
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = "20px Inter, sans-serif";
+  ctx.fillText("This official certificate is proudly presented to:", 600, 310);
+
+  // Participant Name
+  ctx.fillStyle = "#fbbf24";
+  ctx.font = "bold 52px Inter, sans-serif";
+  ctx.fillText(currentUser.name || "Student Name", 600, 390);
+
+  // Course & Details
+  ctx.fillStyle = "#e2e8f0";
+  ctx.font = "22px Inter, sans-serif";
+  ctx.fillText(`Program / Department: ${currentUser.course || "Open Tech Participant"}`, 600, 440);
+
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "18px Inter, sans-serif";
+  ctx.fillText(`For outstanding mastery in engineering & technology with total accumulated score of:`, 600, 500);
+
+  // Points Badge
+  ctx.fillStyle = "#1e3a8a";
+  ctx.beginPath();
+  ctx.roundRect(450, 530, 300, 60, 15);
+  ctx.fill();
+  ctx.strokeStyle = "#fbbf24";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = "#fbbf24";
+  ctx.font = "bold 30px Fredoka, sans-serif";
+  ctx.fillText(`${currentUser.points || 0} POINTS EARNED`, 600, 572);
+
+  // Date & Signatures
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "16px Inter, sans-serif";
+  ctx.fillText(`Issued on: ${today} • CSPC Bicol, Philippines`, 600, 650);
+
+  // Signature Lines
+  ctx.strokeStyle = "#475569";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(250, 740);
+  ctx.lineTo(450, 740);
+  ctx.moveTo(750, 740);
+  ctx.lineTo(950, 740);
+  ctx.stroke();
+
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = "14px Inter, sans-serif";
+  ctx.fillText("CSPC Tech Hub Director", 350, 765);
+  ctx.fillText("ECE Department Chair", 850, 765);
+}
+
+function generateCertificate() {
+  if ((currentUser.points || 0) < 50) {
+    showToast("Earn at least 50 points to download your certificate!");
+    return;
+  }
+
+  drawDefaultCertificateCanvas();
+  const canvas = document.getElementById('certCanvas');
+  const link = document.createElement('a');
+  link.download = `CSPC_Tech_Certificate_${currentUser.name.replace(/\s+/g, '_')}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast("Certificate PNG downloaded!");
+}
+
+// BGM CHIPTUNE AUDIO SYNTHESIZER
+function toggleAudio() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  if (isAudioPlaying) {
+    if (audioOscillator) audioOscillator.stop();
+    isAudioPlaying = false;
+    document.getElementById('audioText').textContent = "BGM: Off";
+    document.getElementById('audioIcon').className = "fa-solid fa-volume-xmark";
+  } else {
+    playChiptuneBgm();
+    isAudioPlaying = true;
+    document.getElementById('audioText').textContent = "BGM: Playing";
+    document.getElementById('audioIcon').className = "fa-solid fa-volume-high text-cspcYellow";
+  }
+}
+
+function playChiptuneBgm() {
+  const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88]; // C Major notes
+  let noteIdx = 0;
+
+  function nextNote() {
+    if (!isAudioPlaying) return;
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(notes[noteIdx % notes.length], audioContext.currentTime);
+    
+    gain.gain.setValueAtTime(0.02, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.25);
+
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+
+    osc.start();
+    osc.stop(audioContext.currentTime + 0.25);
+
+    noteIdx++;
+    setTimeout(nextNote, 300);
+  }
+
+  nextNote();
+}
+
+// TOAST UTILITY
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.remove('translate-y-20', 'opacity-0');
+  setTimeout(() => {
+    toast.classList.add('translate-y-20', 'opacity-0');
+  }, 3000);
+}
+
+// FIREBASE REALTIME DATABASE CONFIG & SYNC ENGINE
+const firebaseConfig = {
+  apiKey: "AIzaSyBEr2mqdAAEc3U0u5G9QWANvrhWkpOhHjQ",
+  authDomain: "cspc-ece-facts.firebaseapp.com",
+  databaseURL: "https://cspc-ece-facts-default-rtdb.firebaseio.com",
+  projectId: "cspc-ece-facts",
+  storageBucket: "cspc-ece-facts.firebasestorage.app",
+  messagingSenderId: "925350696657",
+  appId: "1:925350696657:web:5586ce52d7567cba0517f0",
+  measurementId: "G-2M0PEC1X1E"
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+
+// Live Cross-Device Cloud Score Sync Function
+function syncScoreToCloud() {
+  if (!currentUser.email) return;
+  const userKey = currentUser.email.replace(/[\.\#\$\/\[\]]/g, "_");
+  
+  db.ref("students/" + userKey).set({
+    name: currentUser.name,
+    email: currentUser.email,
+    course: currentUser.course,
+    points: currentUser.points,
+    avatar: currentUser.avatar,
+    lastUpdated: Date.now()
+  });
+}
+
+// Live Leaderboard Realtime Listener
+db.ref("students").on("value", (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    const cloudList = Object.values(data);
+    localStorage.setItem("CSPC_LEADERBOARD_MOCK", JSON.stringify(cloudList));
+    renderLeaderboard();
+  }
+});
+</script>
+</body>
+</html>
