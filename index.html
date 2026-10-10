@@ -538,13 +538,23 @@ function loadProfileFromStorage() {
   if (saved) {
     try {
       currentUser = JSON.parse(saved);
-      updateNavProfileUI();
-    } catch(e) { console.error(e); }
-  } else {
-    // Default avatar SVG
-    currentUser.avatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%233b82f6'/><path d='M30 40 Q50 20 70 40 Q50 60 30 40' fill='%23fbbf24'/><circle cx='50' cy='40' r='10' fill='%23ffffff'/><circle cx='50' cy='40' r='5' fill='%230f172a'/></svg>";
-    openOnboardingModal();
+      if (currentUser && currentUser.name && !currentUser.name.toLowerCase().includes('guest')) {
+        updateNavProfileUI();
+        syncScoreToCloud();
+        return;
+      }
+    } catch(e) {}
   }
+  
+  // Force empty state so registration modal MUST be filled out
+  currentUser = {
+    name: "",
+    email: "",
+    course: "",
+    avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%233b82f6'/><path d='M30 40 Q50 20 70 40 Q50 60 30 40' fill='%23fbbf24'/><circle cx='50' cy='40' r='10' fill='%23ffffff'/><circle cx='50' cy='40' r='5' fill='%230f172a'/></svg>",
+    points: 50
+  };
+  openOnboardingModal();
 }
 
 function updateNavProfileUI() {
@@ -563,6 +573,10 @@ function openOnboardingModal() {
 }
 
 function closeOnboardingModal() {
+  if (!currentUser || !currentUser.name || currentUser.name.toLowerCase().includes('guest')) {
+    alert("Please enter your name, email, and course to enter the Tech Hub!");
+    return;
+  }
   document.getElementById('onboardingModal').classList.add('hidden');
 }
 
@@ -1314,17 +1328,7 @@ function renderLeaderboard() {
 
   let list = JSON.parse(localStorage.getItem('CSPC_LEADERBOARD_MOCK') || '[]');
   
-  // Ensure default sample data if list is small
-  if (list.length < 3) {
-    list = [
-      { name: "Maria Santos", course: "BS ECE 4A", points: 280, avatar: currentUser.avatar },
-      { name: "John Doe", course: "BS IT 2B", points: 190, avatar: currentUser.avatar },
-      { name: "Alex Rivera", course: "SHS STEM", points: 140, avatar: currentUser.avatar },
-      currentUser
-    ];
-  }
-
-  // Sort descending
+   // Sort descending
   list.sort((a,b) => (b.points || 0) - (a.points || 0));
 
   list.forEach((st, idx) => {
@@ -1542,11 +1546,39 @@ function syncScoreToCloud() {
 // Live Leaderboard Realtime Listener
 db.ref("students").on("value", (snapshot) => {
   const data = snapshot.val();
-  if (data) {
-    const cloudList = Object.values(data);
-    localStorage.setItem("CSPC_LEADERBOARD_MOCK", JSON.stringify(cloudList));
-    renderLeaderboard();
+  const tbody = document.getElementById('leaderboardTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  if (!data) {
+    tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-500">No registered players yet. Be the first to register!</td></tr>`;
+    return;
   }
+
+  // Strictly filter out any guest entries
+  let cloudList = Object.values(data).filter(st => st.name && !st.name.toLowerCase().includes('guest'));
+  cloudList.sort((a,b) => (b.points || 0) - (a.points || 0));
+
+  cloudList.forEach((st, idx) => {
+    const tr = document.createElement('tr');
+    tr.className = (currentUser && st.email === currentUser.email) ? "bg-cspcBlue/30 font-bold" : "hover:bg-slate-800/40 transition";
+    tr.innerHTML = `
+      <td class="py-3 px-4 flex items-center gap-2">
+        <span class="w-6 h-6 rounded-full ${idx === 0 ? 'bg-amber-400 text-slate-950 font-extrabold' : 'bg-slate-800 text-slate-400'} flex items-center justify-center text-xs">
+          ${idx + 1}
+        </span>
+      </td>
+      <td class="py-3 px-4">
+        <div class="flex items-center gap-2">
+          <img src="${st.avatar || currentUser.avatar}" class="w-6 h-6 rounded-full border border-cspcYellow object-cover">
+          <span>${st.name}</span>
+        </div>
+      </td>
+      <td class="py-3 px-4 text-slate-400 text-xs">${st.course || 'CSPC Student'}</td>
+      <td class="py-3 px-4 text-right font-extrabold text-cspcYellow">+${st.points || 0} PTS</td>
+    `;
+    tbody.appendChild(tr);
+  });
 });
 </script>
 </body>
