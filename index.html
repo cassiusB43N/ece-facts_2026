@@ -47,7 +47,7 @@
         <div id="userBadge" class="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs">
           <span id="navAvatar" class="w-6 h-6 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold">?</span>
           <span id="navName" class="font-bold text-slate-200">Not Registered</span>
-          <span id="navScore" class="bg-amber-500/20 text-amber-400 font-extrabold px-2 py-0.5 rounded text-[10px]">+50 PTS</span>
+          <span id="navScore" class="bg-amber-500/20 text-amber-400 font-extrabold px-2 py-0.5 rounded text-[10px]">+0 PTS</span>
         </div>
 
         <button onclick="openProfileModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-2 rounded-lg transition">
@@ -61,12 +61,18 @@
   <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
     
     <!-- NAVIGATION TABS -->
-    <div class="flex border-b border-slate-800 mb-6 space-x-4">
-      <button onclick="switchTab('leaderboard')" id="tab-leaderboard" class="py-2 px-4 border-b-2 border-amber-500 text-amber-400 font-bold flex items-center gap-2">
+    <div class="flex border-b border-slate-800 mb-6 space-x-2 md:space-x-4 overflow-x-auto">
+      <button onclick="switchTab('leaderboard')" id="tab-leaderboard" class="py-2 px-4 border-b-2 border-amber-500 text-amber-400 font-bold flex items-center gap-2 whitespace-nowrap">
         <i class="fa-solid fa-trophy"></i> Live Leaderboard
       </button>
-      <button onclick="switchTab('facts')" id="tab-facts" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2">
-        <i class="fa-solid fa-lightbulb"></i> Tech & ECE Facts
+      <button onclick="switchTab('facts')" id="tab-facts" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-lightbulb"></i> 50+ Tech Facts
+      </button>
+      <button onclick="switchTab('games')" id="tab-games" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-gamepad"></i> 10 Mini-Games
+      </button>
+      <button onclick="switchTab('certificate')" id="tab-certificate" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-certificate"></i> Certificate
       </button>
     </div>
 
@@ -105,25 +111,51 @@
       </div>
     </section>
 
-    <!-- FACTS TAB -->
+    <!-- 50+ TECH FACTS TAB -->
     <section id="sec-facts" class="hidden">
+      <div class="mb-4 flex justify-between items-center">
+        <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-book-open text-amber-400 mr-2"></i> ECE & Tech Learning Modules</h2>
+        <span class="text-xs text-slate-400">Mark modules as learned to earn points</span>
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="factsGrid">
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-          <h3 class="font-bold text-amber-400 mb-2"><i class="fa-solid fa-bolt mr-2"></i>Ohm's Law Fundamentals</h3>
-          <p class="text-xs text-slate-300 mb-4">Voltage equals current multiplied by resistance (V = I x R). It forms the foundational calculation for all electronic circuit design.</p>
-          <button onclick="addPoints(10)" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg">+10 PTS Mark Learned</button>
-        </div>
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-          <h3 class="font-bold text-amber-400 mb-2"><i class="fa-solid fa-wifi mr-2"></i>Shannon-Hartley Theorem</h3>
-          <p class="text-xs text-slate-300 mb-4">Defines the maximum rate at which information can be transmitted over a specified bandwidth in the presence of noise.</p>
-          <button onclick="addPoints(10)" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg">+10 PTS Mark Learned</button>
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- 10 MINI-GAMES TAB -->
+    <section id="sec-games" class="hidden">
+      <div class="mb-4">
+        <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-gamepad text-amber-400 mr-2"></i> ECE Knowledge Mini-Games</h2>
+        <p class="text-xs text-slate-400">Test your electronics knowledge to climb the leaderboard.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="gamesGrid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- CERTIFICATE TAB -->
+    <section id="sec-certificate" class="hidden">
+      <div class="bg-slate-900 border border-amber-500/30 rounded-xl p-8 max-w-2xl mx-auto text-center shadow-2xl relative overflow-hidden">
+        <div class="border-4 border-dashed border-amber-500/20 p-6 rounded-lg">
+          <i class="fa-solid fa-award text-5xl text-amber-400 mb-3"></i>
+          <h2 class="text-2xl font-black text-white tracking-wide uppercase mb-1">Certificate of Completion</h2>
+          <p class="text-xs text-slate-400 mb-6">Camarines Sur Polytechnic Colleges • Open Tech Portal</p>
+          
+          <p class="text-sm text-slate-300">This certifies that</p>
+          <h3 id="certName" class="text-xl font-extrabold text-amber-400 my-2 underline decoration-amber-500/40">Student Name</h3>
+          <p class="text-xs text-slate-300 max-w-md mx-auto">has completed interactive learning modules in Electronics Engineering, Digital Systems, and Communication Technology.</p>
+          
+          <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400">
+            <div>Score: <span id="certScore" class="text-amber-400 font-bold">50 PTS</span></div>
+            <div>Date: <span id="certDate">2026</span></div>
+          </div>
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- REGISTRATION MODAL (FORCED ON FIRST VISIT) -->
+  <!-- REGISTRATION MODAL -->
   <div id="profileModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-amber-500/40 rounded-xl max-w-md w-full p-6 relative shadow-2xl">
       <div class="text-center mb-5">
@@ -137,15 +169,15 @@
       <form onsubmit="saveProfile(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name *</label>
-          <input type="text" id="inputName" required placeholder="e.g. ALEC JASPER CASSIUS" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+          <input type="text" id="inputName" required placeholder="e.g. Juan Dela Cruz" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Email Identifier *</label>
-          <input type="email" id="inputEmail" required placeholder="e.g. albuen@my.cspc.edu.ph" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+          <input type="email" id="inputEmail" required placeholder="e.g. student@my.cspc.edu.ph" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Course / Dept / Program *</label>
-          <input type="text" id="inputCourse" required placeholder="e.g. BS ECE - Electronics Engineering" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+          <input type="text" id="inputCourse" required placeholder="e.g. BS ECE" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
         </div>
         <div class="pt-2">
           <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider rounded-lg shadow-lg transition">
@@ -165,10 +197,10 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // 2. USER STATE MANAGEMENT
+    // 2. USER STATE
     let currentUser = JSON.parse(localStorage.getItem('cspc_registered_user')) || null;
 
-    // 3. AUDIO PLAYBACK ENGINE
+    // 3. AUDIO
     let bgmAudio = new Audio('bgm.mp3');
     bgmAudio.loop = true;
     let isPlaying = false;
@@ -188,7 +220,54 @@
       }
     }
 
-    // 4. REALTIME DATABASE SYNC (STRICT FILTER: NO GUESTS)
+    // 4. DATA CONTENT (FACTS & GAMES)
+    const factsData = [
+      { id: 1, title: "Ohm's Law", desc: "Voltage = Current x Resistance (V = I x R). The core formula for electrical circuit analysis." },
+      { id: 2, title: "Shannon-Hartley Theorem", desc: "Determines the theoretical maximum data rate for a noisy communications channel." },
+      { id: 3, title: "Nyquist Sampling Rate", desc: "A signal must be sampled at least twice its highest frequency component to avoid aliasing." },
+      { id: 4, title: "Semiconductor Bandgap", desc: "The energy difference between the valence band and conduction band in materials." },
+      { id: 5, title: "Fourier Transform", desc: "Decomposes a complex signal into its constituent sine and cosine frequencies." },
+      { id: 6, title: "Maxwell's Equations", desc: "Four fundamental equations describing electric and magnetic fields and their interactions." }
+    ];
+
+    const gamesData = [
+      { id: 1, title: "Resistor Color Code Quiz", desc: "Test your speed identifying resistor band colors and values.", pts: 20 },
+      { id: 2, title: "Logic Gate Simulator", desc: "Solve logic combination puzzles using AND, OR, and XOR gates.", pts: 20 },
+      { id: 3, title: "Formula Speed Run", desc: "Match basic ECE formulas to their correct units and variables.", pts: 20 },
+      { id: 4, title: "Signal Modulation Challenge", desc: "Identify AM vs FM signal properties under noisy channel conditions.", pts: 20 }
+    ];
+
+    function renderFacts() {
+      const container = document.getElementById('factsGrid');
+      container.innerHTML = factsData.map(f => `
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl flex flex-col justify-between">
+          <div>
+            <h3 class="font-bold text-amber-400 mb-2"><i class="fa-solid fa-bolt mr-2"></i>${f.title}</h3>
+            <p class="text-xs text-slate-300 mb-4">${f.desc}</p>
+          </div>
+          <button onclick="addPoints(10)" class="self-start bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg">
+            +10 PTS Mark Learned
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function renderGames() {
+      const container = document.getElementById('gamesGrid');
+      container.innerHTML = gamesData.map(g => `
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl flex flex-col justify-between">
+          <div>
+            <h3 class="font-bold text-amber-400 mb-2"><i class="fa-solid fa-gamepad mr-2"></i>${g.title}</h3>
+            <p class="text-xs text-slate-300 mb-4">${g.desc}</p>
+          </div>
+          <button onclick="addPoints(${g.pts})" class="self-start bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg">
+            Play Game (+${g.pts} PTS)
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // 5. REALTIME FIREBASE SYNC (NO GUEST ACCOUNTS)
     function syncLeaderboard() {
       const studentsRef = database.ref('students');
       studentsRef.on('value', (snapshot) => {
@@ -201,7 +280,6 @@
           return;
         }
 
-        // Convert object to array AND FILTER OUT ANY GUESTS
         let studentsList = Object.values(data).filter(st => {
           if (!st.name) return false;
           const lower = st.name.toLowerCase();
@@ -213,7 +291,6 @@
           return;
         }
 
-        // Sort descending by points
         studentsList.sort((a, b) => (b.points || 0) - (a.points || 0));
 
         studentsList.forEach((st, idx) => {
@@ -235,7 +312,7 @@
       });
     }
 
-    // 5. USER REGISTRATION SAVE & WRITE
+    // 6. PROFILE & DATABASE WRITE
     function saveProfile(e) {
       e.preventDefault();
       const name = document.getElementById('inputName').value.trim();
@@ -280,12 +357,15 @@
       });
     }
 
-    // 6. UI ACTIONS
+    // 7. UI CONTROLS
     function updateUI() {
       if (currentUser) {
         document.getElementById('navName').textContent = currentUser.name;
         document.getElementById('navScore').textContent = `+${currentUser.points || 0} PTS`;
         document.getElementById('navAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+        document.getElementById('certName').textContent = currentUser.name;
+        document.getElementById('certScore').textContent = `+${currentUser.points || 0} PTS`;
+        document.getElementById('certDate').textContent = new Date().toLocaleDateString();
       } else {
         document.getElementById('navName').textContent = "Not Registered";
         document.getElementById('navScore').textContent = "+0 PTS";
@@ -313,20 +393,26 @@
     function switchTab(tab) {
       document.getElementById('sec-leaderboard').classList.toggle('hidden', tab !== 'leaderboard');
       document.getElementById('sec-facts').classList.toggle('hidden', tab !== 'facts');
-      document.getElementById('tab-leaderboard').className = tab === 'leaderboard' 
-        ? "py-2 px-4 border-b-2 border-amber-500 text-amber-400 font-bold flex items-center gap-2"
-        : "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2";
-      document.getElementById('tab-facts').className = tab === 'facts' 
-        ? "py-2 px-4 border-b-2 border-amber-500 text-amber-400 font-bold flex items-center gap-2"
-        : "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2";
+      document.getElementById('sec-games').classList.toggle('hidden', tab !== 'games');
+      document.getElementById('sec-certificate').classList.toggle('hidden', tab !== 'certificate');
+
+      ['leaderboard', 'facts', 'games', 'certificate'].forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        if (t === tab) {
+          btn.className = "py-2 px-4 border-b-2 border-amber-500 text-amber-400 font-bold flex items-center gap-2 whitespace-nowrap";
+        } else {
+          btn.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-bold flex items-center gap-2 whitespace-nowrap";
+        }
+      });
     }
 
     // INITIALIZATION
     window.onload = () => {
+      renderFacts();
+      renderGames();
       updateUI();
       syncLeaderboard();
 
-      // IF USER IS NOT REGISTERED, FORCE REGISTRATION POPUP
       if (!currentUser) {
         openProfileModal();
       } else {
